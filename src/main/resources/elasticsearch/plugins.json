@@ -1,0 +1,141 @@
+{
+  "plugins" : {
+    "properties" : {
+      "buildDate" : {
+        "type" : "date",
+        "format" : "MMM dd, YYYY"
+      },
+      "dependencies" : {
+        "type" : "nested",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "optional" : {
+            "type" : "boolean"
+          },
+          "version" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          }
+        }
+      },
+      "developers" : {
+        "type" : "nested",
+        "properties" : {
+          "developerId" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "email" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "exerpt" : {
+        "type" : "string"
+      },
+      "gav" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "installations" : {
+        "type" : "nested",
+        "properties" : {
+          "timestamp" : {
+            "type" : "long"
+          },
+          "total" : {
+            "type" : "integer"
+          }
+        }
+      },
+      "installationsPercentage": {
+        "type" : "nested",
+        "properties" : {
+          "timestamp" : {
+            "type" : "long"
+          },
+          "percentage" : {
+            "type" : "double"
+          }
+        }
+      },
+      "installationsPerVersion" : {
+        "type" : "nested",
+        "properties" : {
+          "version" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "total" : {
+            "type" : "integer"
+          }
+        }
+      },
+      "installationsPercentagePerVersion" : {
+        "type" : "nested",
+        "properties" : {
+          "version" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "percentage" : {
+            "type" : "double"
+          }
+        }
+      },
+      "labels" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "name" : {
+        "type" : "string"
+      },
+      "previousTimestamp" : {
+        "type" : "date",
+        "format" : "date_time"
+      },
+      "previousVersion" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "releaseTimestamp" : {
+        "type" : "date",
+        "format" : "date_time"
+      },
+      "requiredCore" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "scm" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "sha1" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "title" : {
+        "type" : "string"
+      },
+      "url" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "version" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
+      "wiki" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      }
+    }
+  }
+}
