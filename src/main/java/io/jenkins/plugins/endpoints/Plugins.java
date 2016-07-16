@@ -1,5 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
+import io.jenkins.plugins.db.support.ElasticsearchTransformer;
 import io.jenkins.plugins.schedule.JobScheduler;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -7,6 +8,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.glassfish.hk2.api.Immediate;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +60,13 @@ public class Plugins {
         queryBuilder.should(QueryBuilders.termsQuery("labels", labels));
       }
       final SearchResponse response = requestBuilder.setQuery(queryBuilder).execute().get();
-      return response.toString();
+      final long total = response.getHits().getTotalHits();
+      final JSONObject result = new JSONObject();
+      result.put("docs", ElasticsearchTransformer.transformHits(response.getHits()));
+      result.put("total", total);
+      result.put("page", page);
+      result.put("pages", (total + size - 1) / size);
+      return result.toString(2);
     } catch (Exception e) {
       logger.error("Problem executing ES query", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);

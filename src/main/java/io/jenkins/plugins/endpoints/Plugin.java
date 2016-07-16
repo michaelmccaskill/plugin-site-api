@@ -1,5 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
+import io.jenkins.plugins.db.support.ElasticsearchTransformer;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class Plugin {
     try {
       final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
       if (getResponse.isExists()) {
-        return getResponse.getSourceAsString();
+        return ElasticsearchTransformer.transformGet(getResponse).toString(2);
       } else {
         throw new WebApplicationException(Response.Status.NOT_FOUND);
       }
