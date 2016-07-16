@@ -1,5 +1,6 @@
 package io.jenkins.plugins.schedule;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -13,6 +14,7 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -20,10 +22,11 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -40,6 +43,7 @@ public class PopulateElasticsearchJob implements Job {
       throw new JobExecutionException(ES_CLIENT_KEY + " is null");
     }
     logger.info("Starting PopulateElasticsearchJob");
+    final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
     final int processors = Runtime.getRuntime().availableProcessors();
     final ExecutorService executorService = Executors.newFixedThreadPool(processors * 10);
     final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -106,6 +110,15 @@ public class PopulateElasticsearchJob implements Job {
               throw new ClientProtocolException("Unexpected response for stats " + status.toString());
             }
           };
+          final JSONArray categories = new JSONArray();
+          final JSONArray labels = plugin.optJSONArray("labels");
+          for (int i = 0; i < labels.length(); i++) {
+            final String label = labels.getString(i);
+            if (labelToCategoryMap.containsKey(label)) {
+              categories.put(labelToCategoryMap.get(label));
+            }
+          }
+          plugin.put("categories", categories);
           final String url = "http://stats.jenkins-ci.org/plugin-installation-trend/" + plugin.get("name") + ".stats.json";
           try {
             httpClient.execute(new HttpGet(url), statsHandler);
@@ -157,4 +170,30 @@ public class PopulateElasticsearchJob implements Job {
       }
     }
   }
+
+  private Map<String, String> buildLabelToCategoryMap() {
+    final JSONArray categories;
+    final Map<String, String> result = new HashMap<>();
+    try {
+      final ClassLoader cl = getClass().getClassLoader();
+      final File file = new File(cl.getResource("categories.json").getFile());
+      categories = new JSONObject(FileUtils.readFileToString(file, "utf-8")).getJSONArray("categories");
+    } catch (Exception e) {
+      return Collections.emptyMap();
+    }
+    try {
+      for (int i = 0; i < categories.length(); i++) {
+        final JSONObject category = categories.getJSONObject(i);
+        final JSONArray labels = category.getJSONArray("labels");
+        for (int j = 0; j < labels.length(); j++) {
+          final JSONObject label = labels.getJSONObject(j);
+          result.put(label.getString("id"), category.getString("id"));
+        }
+      }
+      return result;
+    } catch (JSONException e) {
+      return Collections.emptyMap();
+    }
+  }
+
 }

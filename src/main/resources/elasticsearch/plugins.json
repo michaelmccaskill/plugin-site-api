@@ -5,6 +5,10 @@
         "type" : "date",
         "format" : "MMM dd, YYYY"
       },
+      "categories" : {
+        "type" : "string",
+        "index" : "not_analyzed"
+      },
       "dependencies" : {
         "type" : "nested",
         "properties" : {

@@ -44,7 +44,7 @@ public class Plugins {
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
-        .addFields("name", "url", "title", "wiki", "excerpt", "labels")
+        .addFields("name", "url", "title", "wiki", "excerpt", "labels", "categories")
         .addHighlightedField("excerpt")
         .setHighlighterFragmentSize(500)
         .setHighlighterNumOfFragments(1)
