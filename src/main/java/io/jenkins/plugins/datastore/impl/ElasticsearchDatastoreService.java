@@ -1,8 +1,8 @@
-package io.jenkins.plugins.service.impl;
+package io.jenkins.plugins.datastore.impl;
 
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
-import io.jenkins.plugins.service.SearchService;
-import io.jenkins.plugins.service.ServiceException;
+import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.datastore.DatastoreException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -14,13 +14,13 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ElasticsearchSearchService implements SearchService {
+public class ElasticsearchDatastoreService implements DatastoreService {
 
   @Inject
   private Client esClient;
 
   @Override
-  public JSONObject search(String query, String sort, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws ServiceException {
+  public JSONObject search(String query, String sort, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .addFields("name", "url", "title", "wiki", "excerpt", "labels", "categories")
@@ -47,7 +47,7 @@ public class ElasticsearchSearchService implements SearchService {
       result.put("pages", (total + size - 1) / size);
       return result;
     } catch (InterruptedException | ExecutionException e) {
-      throw new ServiceException("Problem executing ES query", e);
+      throw new DatastoreException("Problem executing ES query", e);
     }
   }
 

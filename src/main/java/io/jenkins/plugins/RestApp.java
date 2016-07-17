@@ -1,13 +1,12 @@
 package io.jenkins.plugins;
 
+import io.jenkins.plugins.datastore.Binder;
 import io.jenkins.plugins.schedule.JobScheduler;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 
 @ApplicationPath("/")
@@ -15,9 +14,8 @@ public class RestApp extends ResourceConfig {
 
   public RestApp() {
 
-    register(new io.jenkins.plugins.datastore.support.Binder());
+    register(new Binder());
     register(new io.jenkins.plugins.schedule.Binder());
-    register(new io.jenkins.plugins.service.Binder());
 
     register(new ContainerLifecycleListener() {
       @Override

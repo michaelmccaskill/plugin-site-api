@@ -1,7 +1,7 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.service.SearchService;
-import io.jenkins.plugins.service.ServiceException;
+import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.datastore.DatastoreException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public class Plugins {
   private final Logger logger = LoggerFactory.getLogger(Plugins.class);
 
   @Inject
-  private SearchService searchService;
+  private DatastoreService datastoreService;
 
   @GET
   public String search(
@@ -31,9 +31,9 @@ public class Plugins {
       @DefaultValue("50") @QueryParam("size") int size,
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
-      final JSONObject result = searchService.search(query, sort, labels, authors, core, size, page);
+      final JSONObject result = datastoreService.search(query, sort, labels, authors, core, size, page);
       return result.toString(2);
-    } catch (ServiceException e) {
+    } catch (DatastoreException e) {
       logger.error("Problem executing ES query", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
