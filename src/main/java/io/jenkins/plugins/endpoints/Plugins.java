@@ -1,9 +1,7 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.schedule.JobScheduler;
 import io.jenkins.plugins.service.SearchService;
 import io.jenkins.plugins.service.ServiceException;
-import org.glassfish.hk2.api.Immediate;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +14,12 @@ import java.util.List;
 
 @Path("/plugins")
 @Produces(MediaType.APPLICATION_JSON)
-@Immediate
 public class Plugins {
 
   private final Logger logger = LoggerFactory.getLogger(Plugins.class);
 
   @Inject
   private SearchService searchService;
-
-  // Hackity hack hack. This is only here because I can't figure out how to successfully
-  // get the JobScheduler in RestApp from the ServiceLocator. Whenever I try I get NPE
-  // so this injection at least makes @PostConstruct fire
-  @Inject
-  private JobScheduler jobScheduler;
 
   @GET
   public String search(

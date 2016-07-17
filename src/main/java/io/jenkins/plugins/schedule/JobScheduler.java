@@ -12,7 +12,7 @@ import javax.inject.Inject;
 
 public class JobScheduler {
 
-  private static final JobKey JOB_KEY = JobKey.jobKey("populateElasticsearchJob");
+  private static final JobKey JOB_KEY = JobKey.jobKey("PopulateElasticsearchJob");
 
   private final Logger logger = LoggerFactory.getLogger(JobScheduler.class);
 
@@ -53,7 +53,7 @@ public class JobScheduler {
       .build();
     final Trigger trigger = TriggerBuilder
       .newTrigger()
-      .withIdentity("populateElasticserchTrigger")
+      .withIdentity("PopulateElasticserchTrigger")
       // Fire now and then every 12 hours
       .withSchedule(SimpleScheduleBuilder.simpleSchedule()
         .withIntervalInHours(12)
@@ -63,8 +63,9 @@ public class JobScheduler {
     try {
       if (!scheduler.checkExists(JOB_KEY)) {
         scheduler.scheduleJob(job, trigger);
+        logger.info(JOB_KEY + " scheduled");
       }  else {
-        logger.info("Already scheduled");
+        logger.warn(JOB_KEY + " already scheduled");
       }
     } catch (SchedulerException e) {
       logger.error("Problem scheduling " + JOB_KEY + " + job");
