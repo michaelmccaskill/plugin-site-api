@@ -14,9 +14,9 @@ import java.util.List;
 
 @Path("/plugins")
 @Produces(MediaType.APPLICATION_JSON)
-public class Plugins {
+public class PluginsEndpoint {
 
-  private final Logger logger = LoggerFactory.getLogger(Plugins.class);
+  private final Logger logger = LoggerFactory.getLogger(PluginsEndpoint.class);
 
   @Inject
   private DatastoreService datastoreService;

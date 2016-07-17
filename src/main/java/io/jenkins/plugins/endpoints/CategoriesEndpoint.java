@@ -12,7 +12,7 @@ import java.io.File;
 
 @Path("/categories")
 @Produces(MediaType.APPLICATION_JSON)
-public class Categories {
+public class CategoriesEndpoint {
 
   @GET
   public String getCategories() {

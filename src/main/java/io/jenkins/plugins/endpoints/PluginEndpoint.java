@@ -14,9 +14,9 @@ import java.util.concurrent.ExecutionException;
 
 @Path("/plugin/{name}")
 @Produces(MediaType.APPLICATION_JSON)
-public class Plugin {
+public class PluginEndpoint {
 
-  private final Logger logger = LoggerFactory.getLogger(Plugin.class);
+  private final Logger logger = LoggerFactory.getLogger(PluginEndpoint.class);
 
   @Inject
   private Client esClient;
