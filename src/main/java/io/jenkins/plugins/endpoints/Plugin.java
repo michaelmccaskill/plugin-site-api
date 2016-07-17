@@ -1,6 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.db.support.ElasticsearchTransformer;
+import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;

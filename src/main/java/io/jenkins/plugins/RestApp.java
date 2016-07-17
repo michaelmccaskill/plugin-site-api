@@ -1,7 +1,7 @@
 package io.jenkins.plugins;
 
-import io.jenkins.plugins.db.support.ElasticsearchClientFactory;
-import io.jenkins.plugins.db.support.EmbeddedElasticsearchServer;
+import io.jenkins.plugins.datastore.support.ElasticsearchClientFactory;
+import io.jenkins.plugins.datastore.support.EmbeddedElasticsearchServer;
 import io.jenkins.plugins.schedule.JobScheduler;
 import org.elasticsearch.client.Client;
 import org.glassfish.hk2.api.ServiceLocator;

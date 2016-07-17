@@ -1,4 +1,4 @@
-package io.jenkins.plugins.db.support;
+package io.jenkins.plugins.datastore.support;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.search.SearchHit;

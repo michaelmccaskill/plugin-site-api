@@ -1,4 +1,4 @@
-package io.jenkins.plugins.db.support;
+package io.jenkins.plugins.datastore.support;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
@@ -16,7 +16,6 @@ import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Copied & modified from:

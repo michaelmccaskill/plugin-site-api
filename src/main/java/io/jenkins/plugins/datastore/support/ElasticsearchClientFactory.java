@@ -1,11 +1,10 @@
-package io.jenkins.plugins.db.support;
+package io.jenkins.plugins.datastore.support;
 
 import org.elasticsearch.client.Client;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.Immediate;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 @Immediate
 public class ElasticsearchClientFactory implements Factory<Client> {

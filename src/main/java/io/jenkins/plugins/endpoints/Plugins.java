@@ -1,6 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.db.support.ElasticsearchTransformer;
+import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import io.jenkins.plugins.schedule.JobScheduler;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
