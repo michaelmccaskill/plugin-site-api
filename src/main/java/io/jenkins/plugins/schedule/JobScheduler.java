@@ -1,8 +1,6 @@
 package io.jenkins.plugins.schedule;
 
 import org.elasticsearch.client.Client;
-import org.glassfish.hk2.api.Immediate;
-import org.jvnet.hk2.annotations.Service;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
@@ -12,8 +10,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-@Service
-@Immediate
 public class JobScheduler {
 
   private static final JobKey JOB_KEY = JobKey.jobKey("populateElasticsearchJob");

@@ -6,8 +6,6 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
-import org.glassfish.hk2.api.Immediate;
-import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +19,6 @@ import java.nio.file.Files;
  * Copied & modified from:
  * https://orrsella.com/2014/10/28/embedded-elasticsearch-server-for-scala-integration-tests/
  */
-@Service
-@Immediate
 public class EmbeddedElasticsearchServer {
 
   private final Logger logger = LoggerFactory.getLogger(EmbeddedElasticsearchServer.class);
