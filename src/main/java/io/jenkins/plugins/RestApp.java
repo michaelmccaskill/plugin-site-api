@@ -22,15 +22,9 @@ public class RestApp extends ResourceConfig {
   public RestApp(ServiceLocator locator) {
     ServiceLocatorUtilities.enableImmediateScope(locator);
 
-    register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-        bind(EmbeddedElasticsearchServer.class).to(EmbeddedElasticsearchServer.class).in(Singleton.class);
-        bindFactory(ElasticsearchClientFactory.class).to(Client.class).in(Singleton.class);
-        bind(JobScheduler.class).to(JobScheduler.class).in(Singleton.class);
-        bind(ElasticsearchSearchService.class).to(SearchService.class).in(Singleton.class);
-      }
-    });
+    register(new io.jenkins.plugins.datastore.support.Binder());
+    register(new io.jenkins.plugins.schedule.Binder());
+    register(new io.jenkins.plugins.service.Binder());
 
     packages("io.jenkins.plugins");
   }
