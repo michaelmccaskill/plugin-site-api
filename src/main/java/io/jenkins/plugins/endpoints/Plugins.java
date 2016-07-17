@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
+import java.util.List;
 
 @Path("/plugins")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,13 +34,13 @@ public class Plugins {
   public String search(
       @QueryParam("q") String query,
       @DefaultValue("name") @QueryParam("sort") String sort,
-      @DefaultValue("") @QueryParam("labels") String labels,
-      @DefaultValue("") @QueryParam("authors")String authors,
+      @QueryParam("labels") List<String> labels,
+      @QueryParam("authors") List<String> authors,
       @DefaultValue("") @QueryParam("core")String core,
       @DefaultValue("50") @QueryParam("size") int size,
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
-      final JSONObject result = searchService.search(query, sort, Arrays.asList(labels.split(",")), Arrays.asList(authors.split(",")), core, size, page);
+      final JSONObject result = searchService.search(query, sort, labels, authors, core, size, page);
       return result.toString(2);
     } catch (ServiceException e) {
       logger.error("Problem executing ES query", e);
