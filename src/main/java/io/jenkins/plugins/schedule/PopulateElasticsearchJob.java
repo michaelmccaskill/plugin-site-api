@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class PopulateElasticsearchJob implements Job {
@@ -44,8 +45,7 @@ public class PopulateElasticsearchJob implements Job {
     }
     logger.info("Starting PopulateElasticsearchJob");
     final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
-    final int processors = Runtime.getRuntime().availableProcessors();
-    final ExecutorService executorService = Executors.newFixedThreadPool(processors * 10);
+    final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     try {
       final ResponseHandler<JSONObject> updateCenterHandler = (httpResponse) -> {
@@ -62,7 +62,9 @@ public class PopulateElasticsearchJob implements Job {
           throw new ClientProtocolException("Unexpected response from update center - " + status.toString());
         }
       };
+      logger.info("Downloading plugins from update center");
       final JSONObject plugins = httpClient.execute(new HttpGet("https://updates.jenkins-ci.org/current/update-center.json"), updateCenterHandler);
+      logger.info("Iterating plugins for installation statistics");
       final List<Callable<Void>> tasks = new ArrayList<>();
       for (String key : plugins.keySet()) {
         final JSONObject plugin = plugins.getJSONObject(key);
@@ -136,6 +138,11 @@ public class PopulateElasticsearchJob implements Job {
           throw new IllegalStateException(e);
         }
       });
+
+      logger.info("Preparing to index plugins");
+
+      AtomicInteger count = new AtomicInteger(0);
+
       final BulkProcessor bulk = BulkProcessor.builder(esClient, new BulkProcessor.Listener() {
 
         @Override
@@ -144,7 +151,8 @@ public class PopulateElasticsearchJob implements Job {
 
         @Override
         public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-          logger.info("Indexed " + response.getItems().length + " plugins in " + response.getTook().minutes() + " min " + response.getTook().seconds() + " sec");
+          logger.info("Indexed " + response.getItems().length + " plugins");
+          count.addAndGet(response.getItems().length);
         }
 
         @Override
@@ -156,6 +164,7 @@ public class PopulateElasticsearchJob implements Job {
         bulk.add(esClient.prepareIndex("plugins", "plugins").setId(plugin.getString("name")).setSource(plugin.toString()).request());
       });
       bulk.awaitClose(2, TimeUnit.MINUTES);
+      logger.info("Total plugins indexed : " + count);
       logger.info("Finished PopulateElasticsearchJob");
     } catch (Exception e) {
       logger.error("Problem getting plugin information", e);
