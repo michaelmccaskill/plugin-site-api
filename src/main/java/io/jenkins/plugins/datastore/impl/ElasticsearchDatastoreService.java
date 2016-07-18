@@ -1,8 +1,9 @@
 package io.jenkins.plugins.datastore.impl;
 
-import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
-import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.DatastoreException;
+import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -51,4 +52,13 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     }
   }
 
+  @Override
+  public JSONObject get(String name) {
+    try {
+      final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
+      return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse) : null;
+    } catch (InterruptedException | ExecutionException e) {
+        throw new DatastoreException("Problem executing ES query", e);
+    }
+  }
 }
