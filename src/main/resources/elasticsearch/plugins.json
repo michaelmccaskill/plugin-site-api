@@ -41,7 +41,7 @@
           }
         }
       },
-      "exerpt" : {
+      "excerpt" : {
         "type" : "string"
       },
       "gav" : {
