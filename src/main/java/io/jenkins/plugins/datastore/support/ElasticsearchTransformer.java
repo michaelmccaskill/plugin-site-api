@@ -36,7 +36,9 @@ public class ElasticsearchTransformer {
         json.put(key, entry.getValue().getValues().get(0));
       }
     });
-    json.put("highlight", hit.getHighlightFields().get("excerpt").fragments()[0].string());
+    if (hit.getHighlightFields().containsKey("excerpt")) {
+      json.put("highlight", hit.getHighlightFields().get("excerpt").fragments()[0].string());
+    }
     return json;
   }
 
