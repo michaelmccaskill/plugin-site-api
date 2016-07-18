@@ -34,7 +34,7 @@ public class PluginsEndpoint {
       final JSONObject result = datastoreService.search(query, sort, labels, authors, core, size, page);
       return result.toString(2);
     } catch (DatastoreException e) {
-      logger.error("Problem executing ES query", e);
+      logger.error("Problem getting plugins", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
