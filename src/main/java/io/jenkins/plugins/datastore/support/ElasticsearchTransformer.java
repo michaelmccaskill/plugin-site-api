@@ -1,23 +1,21 @@
 package io.jenkins.plugins.datastore.support;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jenkins.plugins.models.Plugin;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class ElasticsearchTransformer {
 
-  private static Logger logger = LoggerFactory.getLogger(ElasticsearchTransformer.class);
+  private static ObjectMapper objectMapper = new ObjectMapper();
 
-  public static JSONObject transformGet(GetResponse get) {
-    final JSONObject json = new JSONObject();
-    get.getSource().entrySet().stream().forEach((entry) -> {
-      json.put(entry.getKey(), entry.getValue());
-    });
-    return json;
+  public static Plugin transformGet(GetResponse get) throws IOException {
+    return objectMapper.readValue(get.getSourceAsString(), Plugin.class);
   }
 
   public static JSONArray transformHits(SearchHits hits) {

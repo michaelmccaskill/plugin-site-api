@@ -2,7 +2,7 @@ package io.jenkins.plugins.endpoints;
 
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
-import org.json.JSONObject;
+import io.jenkins.plugins.models.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +21,11 @@ public class PluginEndpoint {
   private DatastoreService datastoreService;
 
   @GET
-  public String getPlugin(@PathParam("name") String name) {
+  public Plugin getPlugin(@PathParam("name") String name) {
     try {
-      final JSONObject result = datastoreService.getPlugin(name);
-      if (result != null) {
-        return result.toString(2);
+      final Plugin plugin = datastoreService.getPlugin(name);
+      if (plugin != null) {
+        return plugin;
       } else {
         throw new WebApplicationException(Response.Status.NOT_FOUND);
       }

@@ -3,6 +3,7 @@ package io.jenkins.plugins.datastore.impl;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
+import io.jenkins.plugins.models.Plugin;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -11,7 +12,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.filters.Filters;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,11 +69,11 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public JSONObject getPlugin(String name) {
+  public Plugin getPlugin(String name) {
     try {
       final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
       return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse) : null;
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (Exception e) {
         throw new DatastoreException("Problem executing ES query", e);
     }
   }
