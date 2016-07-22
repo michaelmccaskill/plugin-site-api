@@ -72,7 +72,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   public Plugin getPlugin(String name) {
     try {
       final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
-      return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse) : null;
+      return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse, Plugin.class) : null;
     } catch (Exception e) {
         throw new DatastoreException("Problem executing ES query", e);
     }

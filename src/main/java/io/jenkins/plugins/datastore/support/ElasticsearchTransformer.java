@@ -1,7 +1,6 @@
 package io.jenkins.plugins.datastore.support;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jenkins.plugins.models.Plugin;
+import io.jenkins.plugins.commons.JsonObjectMapper;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -12,10 +11,8 @@ import java.io.IOException;
 
 public class ElasticsearchTransformer {
 
-  private static ObjectMapper objectMapper = new ObjectMapper();
-
-  public static Plugin transformGet(GetResponse get) throws IOException {
-    return objectMapper.readValue(get.getSourceAsString(), Plugin.class);
+  public static <T> T transformGet(GetResponse get, Class<T> type) throws IOException {
+    return JsonObjectMapper.getObjectMapper().readValue(get.getSourceAsString(), type);
   }
 
   public static JSONArray transformHits(SearchHits hits) {
