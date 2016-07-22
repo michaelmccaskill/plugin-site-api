@@ -1,7 +1,6 @@
 package io.jenkins.plugins;
 
-import io.jenkins.plugins.datastore.Binder;
-import io.jenkins.plugins.schedule.JobScheduler;
+import io.jenkins.plugins.datastore.support.EmbeddedElasticsearchServer;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
@@ -14,15 +13,14 @@ public class RestApp extends ResourceConfig {
 
   public RestApp() {
 
-    register(new Binder());
-    register(new io.jenkins.plugins.schedule.Binder());
+    register(new io.jenkins.plugins.datastore.Binder());
 
     register(new ContainerLifecycleListener() {
       @Override
       public void onStartup(Container container) {
         final ServiceLocator locator = container.getApplicationHandler().getServiceLocator();
-        // Preload JobScheduler so job is scheduled
-        locator.getService(JobScheduler.class);
+        // Preload so ES gets indexed
+        locator.getService(EmbeddedElasticsearchServer.class);
       }
 
       @Override
