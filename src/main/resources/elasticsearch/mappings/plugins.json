@@ -48,52 +48,6 @@
         "type" : "string",
         "index" : "not_analyzed"
       },
-      "installations" : {
-        "type" : "nested",
-        "properties" : {
-          "timestamp" : {
-            "type" : "long"
-          },
-          "total" : {
-            "type" : "integer"
-          }
-        }
-      },
-      "installationsPercentage": {
-        "type" : "nested",
-        "properties" : {
-          "timestamp" : {
-            "type" : "long"
-          },
-          "percentage" : {
-            "type" : "double"
-          }
-        }
-      },
-      "installationsPerVersion" : {
-        "type" : "nested",
-        "properties" : {
-          "version" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "total" : {
-            "type" : "integer"
-          }
-        }
-      },
-      "installationsPercentagePerVersion" : {
-        "type" : "nested",
-        "properties" : {
-          "version" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "percentage" : {
-            "type" : "double"
-          }
-        }
-      },
       "labels" : {
         "type" : "string",
         "index" : "not_analyzed"
@@ -124,6 +78,57 @@
       "sha1" : {
         "type" : "string",
         "index" : "not_analyzed"
+      },
+      "stats" : {
+        "type" : "nested",
+        "properties" : {
+          "installations" : {
+            "type" : "nested",
+            "properties" : {
+              "timestamp" : {
+                "type" : "long"
+              },
+              "total" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "installationsPercentage": {
+            "type" : "nested",
+            "properties" : {
+              "timestamp" : {
+                "type" : "long"
+              },
+              "percentage" : {
+                "type" : "double"
+              }
+            }
+          },
+          "installationsPerVersion" : {
+            "type" : "nested",
+            "properties" : {
+              "version" : {
+                "type" : "string",
+                "index" : "not_analyzed"
+              },
+              "total" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "installationsPercentagePerVersion" : {
+            "type" : "nested",
+            "properties" : {
+              "version" : {
+                "type" : "string",
+                "index" : "not_analyzed"
+              },
+              "percentage" : {
+                "type" : "double"
+              }
+            }
+          }
+        }
       },
       "title" : {
         "type" : "string"
