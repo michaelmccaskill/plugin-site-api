@@ -26,18 +26,6 @@ public class Plugin {
   @JsonProperty("gav")
   private String gav;
 
-  @JsonProperty("installations")
-  private List<Installation> installations;
-
-  @JsonProperty("installationsPercentage")
-  private List<InstallationPercentage> installationsPercentage;
-
-  @JsonProperty("installationsPerVersion")
-  private List<InstallationVersion> installationsPerVersion;
-
-  @JsonProperty("installationsPercentagePerVersion")
-  private List<InstallationPercentageVersion> installationsPercentagePerVersion;
-
   @JsonProperty("labels")
   private List<String> labels;
 
@@ -62,6 +50,9 @@ public class Plugin {
   @JsonProperty("sha1")
   private String sha1;
 
+  @JsonProperty("stats")
+  private Stats stats;
+
   @JsonProperty("title")
   private String title;
 
@@ -78,20 +69,15 @@ public class Plugin {
   }
 
   public Plugin(String buildDate, List<String> categories, List<Dependency> dependencies, List<Developer> developers,
-                String excerpt, String gav, List<Installation> installations, List<InstallationPercentage> installationsPercentage,
-                List<InstallationVersion> installationsPerVersion, List<InstallationPercentageVersion> installationsPercentagePerVersion,
-                List<String> labels, String name, String previousTimestamp, String previousVersion, String releaseTimestamp,
-                String requiredCore, String scm, String sha1, String title, String url, String version, String wiki) {
+                String excerpt, String gav, List<String> labels, String name, String previousTimestamp,
+                String previousVersion, String releaseTimestamp, String requiredCore, String scm, String sha1,
+                Stats stats, String title, String url, String version, String wiki) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
     this.developers = developers;
     this.excerpt = excerpt;
     this.gav = gav;
-    this.installations = installations;
-    this.installationsPercentage = installationsPercentage;
-    this.installationsPerVersion = installationsPerVersion;
-    this.installationsPercentagePerVersion = installationsPercentagePerVersion;
     this.labels = labels;
     this.name = name;
     this.previousTimestamp = previousTimestamp;
@@ -100,6 +86,7 @@ public class Plugin {
     this.requiredCore = requiredCore;
     this.scm = scm;
     this.sha1 = sha1;
+    this.stats = stats;
     this.title = title;
     this.url = url;
     this.version = version;
@@ -152,38 +139,6 @@ public class Plugin {
 
   public void setGav(String gav) {
     this.gav = gav;
-  }
-
-  public List<Installation> getInstallations() {
-    return installations;
-  }
-
-  public void setInstallations(List<Installation> installations) {
-    this.installations = installations;
-  }
-
-  public List<InstallationPercentage> getInstallationsPercentage() {
-    return installationsPercentage;
-  }
-
-  public void setInstallationsPercentage(List<InstallationPercentage> installationsPercentage) {
-    this.installationsPercentage = installationsPercentage;
-  }
-
-  public List<InstallationVersion> getInstallationsPerVersion() {
-    return installationsPerVersion;
-  }
-
-  public void setInstallationsPerVersion(List<InstallationVersion> installationsPerVersion) {
-    this.installationsPerVersion = installationsPerVersion;
-  }
-
-  public List<InstallationPercentageVersion> getInstallationsPercentagePerVersion() {
-    return installationsPercentagePerVersion;
-  }
-
-  public void setInstallationsPercentagePerVersion(List<InstallationPercentageVersion> installationsPercentagePerVersion) {
-    this.installationsPercentagePerVersion = installationsPercentagePerVersion;
   }
 
   public List<String> getLabels() {
@@ -248,6 +203,14 @@ public class Plugin {
 
   public void setSha1(String sha1) {
     this.sha1 = sha1;
+  }
+
+  public Stats getStats() {
+    return stats;
+  }
+
+  public void setStats(Stats stats) {
+    this.stats = stats;
   }
 
   public String getTitle() {
