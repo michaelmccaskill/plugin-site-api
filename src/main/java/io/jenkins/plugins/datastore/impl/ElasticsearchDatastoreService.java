@@ -3,6 +3,7 @@ package io.jenkins.plugins.datastore.impl;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
+import io.jenkins.plugins.models.Label;
 import io.jenkins.plugins.models.Plugin;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.get.GetResponse;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,27 +96,23 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public JSONObject getLabels() throws DatastoreException {
+  public List<Label> getLabels() throws DatastoreException {
     try {
       final Map<String, String> labelTitleMap = buildLabelTitleMap();
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .addAggregation(AggregationBuilders.terms("labels").field("labels").size(0))
         .setSize(0);
       final SearchResponse response = requestBuilder.execute().get();
-      final JSONArray labels = new JSONArray();
+      final List<Label> labels = new ArrayList<>();
       final StringTerms agg = response.getAggregations().get("labels");
       agg.getBuckets().forEach((entry) -> {
         final String key = entry.getKey();
-        final JSONObject label = new JSONObject();
-        label.put("id" , key);
-        if (labelTitleMap.containsKey(key)) {
-          label.put("title", labelTitleMap.get(key));
-        }
-        labels.put(label);
+        final Label label = new Label(
+          key, labelTitleMap.getOrDefault(key, null)
+        );
+        labels.add(label);
       });
-      final JSONObject result = new JSONObject();
-      result.put("labels", labels);
-      return result;
+      return labels;
     } catch (Exception e) {
       logger.error("Problem getting labels", e);
       throw new DatastoreException("Problem getting labels", e);
