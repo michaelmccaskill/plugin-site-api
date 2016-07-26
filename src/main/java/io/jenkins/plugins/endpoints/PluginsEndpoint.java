@@ -1,9 +1,8 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.DatastoreException;
+import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.models.Plugins;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

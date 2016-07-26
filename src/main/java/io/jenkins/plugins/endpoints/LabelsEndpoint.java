@@ -1,9 +1,7 @@
 package io.jenkins.plugins.endpoints;
 
 import io.jenkins.plugins.datastore.DatastoreService;
-import io.jenkins.plugins.models.Label;
 import io.jenkins.plugins.models.Labels;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Path("/labels")
 @Produces(MediaType.APPLICATION_JSON)
