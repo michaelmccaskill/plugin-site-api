@@ -1,8 +1,10 @@
 package io.jenkins.plugins.datastore.impl;
 
+import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
+import io.jenkins.plugins.models.Category;
 import io.jenkins.plugins.models.Label;
 import io.jenkins.plugins.models.Plugin;
 import org.apache.commons.io.FileUtils;
@@ -83,12 +85,17 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public JSONObject getCategories() throws DatastoreException {
+  public List<Category> getCategories() throws DatastoreException {
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("categories.json").getFile());
-      final String json = FileUtils.readFileToString(file, "utf-8");
-      return new JSONObject(json);
+      final JSONArray json = new JSONObject(FileUtils.readFileToString(file, "utf-8")).getJSONArray("categories");
+      final List<Category> categories = new ArrayList<>();
+      for (Object entry : json) {
+        final Category category = JsonObjectMapper.getObjectMapper().readValue(entry.toString(), Category.class);
+        categories.add(category);
+      }
+      return categories;
     } catch (Exception e) {
       logger.error("Problem getting categories", e);
       throw new DatastoreException("Problem getting categories", e);

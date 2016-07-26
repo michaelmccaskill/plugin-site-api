@@ -1,7 +1,9 @@
 package io.jenkins.plugins.endpoints;
 
 import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.models.Category;
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +15,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.util.List;
 
 @Path("/categories")
 @Produces(MediaType.APPLICATION_JSON)
@@ -26,7 +29,10 @@ public class CategoriesEndpoint {
   @GET
   public String getCategories() {
     try {
-      return datastoreService.getCategories().toString(2);
+      final List<Category> categories = datastoreService.getCategories();
+      final JSONObject result = new JSONObject();
+      result.put("categories", categories);
+      return result.toString(2);
     } catch (Exception e) {
       logger.error("Problem getting categories", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
