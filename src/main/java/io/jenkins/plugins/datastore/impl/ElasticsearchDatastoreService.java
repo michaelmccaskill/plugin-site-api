@@ -7,6 +7,7 @@ import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import io.jenkins.plugins.models.Category;
 import io.jenkins.plugins.models.Label;
 import io.jenkins.plugins.models.Plugin;
+import io.jenkins.plugins.models.Plugins;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -37,15 +38,9 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   private Client esClient;
 
   @Override
-  public JSONObject search(String query, String sort, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
+  public Plugins search(String query, String sort, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
-        .addFields("name", "url", "title", "wiki", "excerpt", "labels", "categories")
-        .addHighlightedField("excerpt")
-        .setHighlighterFragmentSize(500)
-        .setHighlighterNumOfFragments(1)
-        .setHighlighterPreTags("<mark>")
-        .setHighlighterPostTags("</mark>")
         .setFrom((page - 1) * size)
         .setSize(size);
       if (query != null && !query.trim().isEmpty()) {
@@ -62,13 +57,14 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       }
       final SearchResponse response = requestBuilder.execute().get();
       final long total = response.getHits().getTotalHits();
-      final JSONObject result = new JSONObject();
-      result.put("docs", ElasticsearchTransformer.transformHits(response.getHits()));
-      result.put("total", total);
-      result.put("page", page);
-      result.put("pages", (total + size - 1) / size);
+      final long pages = (total + size - 1) / size;
+      final Plugins result = new Plugins();
+      result.setPlugins(ElasticsearchTransformer.transformHits(response.getHits()));
+      result.setTotal(total);
+      result.setPage(page);
+      result.setPages(pages);
       return result;
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (Exception e) {
       logger.error("Problem executing, ES query", e);
       throw new DatastoreException("Problem executing ES query", e);
     }
