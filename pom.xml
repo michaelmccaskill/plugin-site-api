@@ -143,7 +143,11 @@
         <artifactId>jetty-maven-plugin</artifactId>
         <version>9.3.10.v20160621</version>
       </plugin>
-
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.5.0</version>
+      </plugin>
     </plugins>
   </build>
 
