@@ -1,10 +1,9 @@
 package io.jenkins.plugins.datastore;
 
 import io.jenkins.plugins.models.Category;
-import io.jenkins.plugins.models.Label;
+import io.jenkins.plugins.models.Labels;
 import io.jenkins.plugins.models.Plugin;
 import io.jenkins.plugins.models.Plugins;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -16,6 +15,6 @@ public interface DatastoreService {
 
   List<Category> getCategories() throws DatastoreException;
 
-  List<Label> getLabels() throws DatastoreException;
+  Labels getLabels() throws DatastoreException;
 
 }

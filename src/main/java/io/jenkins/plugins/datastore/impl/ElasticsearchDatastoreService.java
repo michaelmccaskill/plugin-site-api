@@ -4,10 +4,7 @@ import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
-import io.jenkins.plugins.models.Category;
-import io.jenkins.plugins.models.Label;
-import io.jenkins.plugins.models.Plugin;
-import io.jenkins.plugins.models.Plugins;
+import io.jenkins.plugins.models.*;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -99,7 +96,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public List<Label> getLabels() throws DatastoreException {
+  public Labels getLabels() throws DatastoreException {
     try {
       final Map<String, String> labelTitleMap = buildLabelTitleMap();
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
@@ -115,7 +112,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         );
         labels.add(label);
       });
-      return labels;
+      return new Labels(labels);
     } catch (Exception e) {
       logger.error("Problem getting labels", e);
       throw new DatastoreException("Problem getting labels", e);

@@ -2,6 +2,7 @@ package io.jenkins.plugins.endpoints;
 
 import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.models.Label;
+import io.jenkins.plugins.models.Labels;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +26,9 @@ public class LabelsEndpoint {
   private DatastoreService datastoreService;
 
   @GET
-  public String getLabels() {
+  public Labels getLabels() {
     try {
-      final List<Label> labels = datastoreService.getLabels();
-      final JSONObject result = new JSONObject();
-      result.put("labels", labels);
-      return result.toString(2);
+      return datastoreService.getLabels();
     } catch (Exception e) {
       logger.error("Problem getting labels", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
