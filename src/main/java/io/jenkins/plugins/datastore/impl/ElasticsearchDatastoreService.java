@@ -20,7 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class ElasticsearchDatastoreService implements DatastoreService {
@@ -94,26 +96,44 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   @Override
   public JSONObject getLabels() throws DatastoreException {
     try {
+      final Map<String, String> labelTitleMap = buildLabelTitleMap();
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .addAggregation(AggregationBuilders.terms("labels").field("labels").size(0))
         .setSize(0);
       final SearchResponse response = requestBuilder.execute().get();
-      final JSONArray docs = new JSONArray();
+      final JSONArray labels = new JSONArray();
       final StringTerms agg = response.getAggregations().get("labels");
       agg.getBuckets().forEach((entry) -> {
         final String key = entry.getKey();
-        final long value = entry.getDocCount();
-        final JSONObject result = new JSONObject();
-        result.put("key" , key);
-        result.put("value", value);
-        docs.put(result);
+        final JSONObject label = new JSONObject();
+        label.put("id" , key);
+        if (labelTitleMap.containsKey(key)) {
+          label.put("title", labelTitleMap.get(key));
+        }
+        labels.put(label);
       });
       final JSONObject result = new JSONObject();
-      result.put("docs", docs);
+      result.put("labels", labels);
       return result;
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (Exception e) {
       logger.error("Problem getting labels", e);
       throw new DatastoreException("Problem getting labels", e);
+    }
+  }
+
+  private Map<String, String> buildLabelTitleMap() {
+    try {
+      final ClassLoader cl = getClass().getClassLoader();
+      final File file = new File(cl.getResource("labels.json").getFile());
+      final JSONArray labels = new JSONObject(FileUtils.readFileToString(file, "utf-8")).getJSONArray("labels");
+      final Map<String, String> result = new HashMap<>();
+      for (int i = 0; i < labels.length(); i++) {
+        final JSONObject label = labels.getJSONObject(i);
+        result.put(label.getString("id"), label.getString("title"));
+      }
+      return result;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }
