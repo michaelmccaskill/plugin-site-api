@@ -165,8 +165,7 @@ public class GeneratePluginData {
         final JSONObject category = categories.getJSONObject(i);
         final JSONArray labels = category.getJSONArray("labels");
         for (int j = 0; j < labels.length(); j++) {
-          final JSONObject label = labels.getJSONObject(j);
-          result.put(label.getString("id"), category.getString("id"));
+          result.put(labels.getString(j), category.getString("id"));
         }
       }
       return result;
