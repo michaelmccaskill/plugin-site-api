@@ -78,7 +78,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public List<Category> getCategories() throws DatastoreException {
+  public Categories getCategories() throws DatastoreException {
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("categories.json").getFile());
@@ -88,7 +88,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         final Category category = JsonObjectMapper.getObjectMapper().readValue(entry.toString(), Category.class);
         categories.add(category);
       }
-      return categories;
+      return new Categories(categories);
     } catch (Exception e) {
       logger.error("Problem getting categories", e);
       throw new DatastoreException("Problem getting categories", e);
