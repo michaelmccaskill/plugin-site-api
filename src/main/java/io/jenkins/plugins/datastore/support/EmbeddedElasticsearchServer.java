@@ -39,7 +39,7 @@ public class EmbeddedElasticsearchServer {
   public void postConstruct() {
     logger.info("Initialize elasticsearch");
     try {
-      this.dataDir = Files.createTempDirectory("elasticsearch_data").toFile();
+      dataDir = Files.createTempDirectory("elasticsearch_data_").toFile();
     } catch (IOException e) {
       logger.error("Problem creating temp data directory", e);
       throw new RuntimeException(e);
@@ -56,8 +56,10 @@ public class EmbeddedElasticsearchServer {
 
   @PreDestroy
   public void preDestroy() {
+    logger.info("Destroying elasticsearch");
+    getClient().close();
     node.close();
-    FileUtils.deleteQuietly(this.dataDir);
+    FileUtils.deleteQuietly(dataDir);
   }
 
   private void createAndPopulateIndex() {
@@ -83,6 +85,7 @@ public class EmbeddedElasticsearchServer {
       client.bulk(bulkRequestBuilder.request()).get();
       logger.info(String.format("Indexed %d plugins", json.keySet().size()));
       client.admin().indices().prepareAliases().addAlias(index, "plugins").get();
+      client.admin().indices().prepareRefresh("plugins").execute().get();
       logger.info(String.format("Alias plugins points to index %s", index));
     } catch (Exception e) {
       logger.error("Problem creating and populating index", e);

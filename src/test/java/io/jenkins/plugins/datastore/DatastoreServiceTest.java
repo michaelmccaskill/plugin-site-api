@@ -6,6 +6,7 @@ import io.jenkins.plugins.models.Plugin;
 import io.jenkins.plugins.models.Plugins;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,14 +15,20 @@ import java.util.Collections;
 
 public class DatastoreServiceTest {
 
+  private static ServiceLocator locator;
   private static DatastoreService datastoreService;
 
   // BeforeClass because there's no reason to start/stop Elasticsearch for every test when
   // all our operations are read-only
   @BeforeClass
   public static void setUp() throws Exception {
-    final ServiceLocator locator  = ServiceLocatorUtilities.bind(new Binder());
+    locator  = ServiceLocatorUtilities.bind(new Binder());
     datastoreService = locator.getService(DatastoreService.class);
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    locator.shutdown();
   }
 
   @Test
