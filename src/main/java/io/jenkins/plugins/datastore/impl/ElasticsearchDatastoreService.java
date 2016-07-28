@@ -122,7 +122,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       final List<Label> labels = new ArrayList<>();
       final StringTerms agg = response.getAggregations().get("labels");
       agg.getBuckets().forEach((entry) -> {
-        final String key = entry.getKey();
+        final String key = entry.getKeyAsString();
         final Label label = new Label(
           key, labelTitleMap.getOrDefault(key, null)
         );

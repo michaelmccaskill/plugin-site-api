@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -28,7 +27,7 @@ public class EmbeddedElasticsearchServer {
 
   private final Logger logger = LoggerFactory.getLogger(EmbeddedElasticsearchServer.class);
 
-  private File dataDir;
+  private File tempDir;
   private Node node;
 
   public Client getClient() {
@@ -39,13 +38,15 @@ public class EmbeddedElasticsearchServer {
   public void postConstruct() {
     logger.info("Initialize elasticsearch");
     try {
-      dataDir = Files.createTempDirectory("elasticsearch_data_").toFile();
+      tempDir = Files.createTempDirectory("elasticsearch_").toFile();
     } catch (IOException e) {
       logger.error("Problem creating temp data directory", e);
       throw new RuntimeException(e);
     }
-    final Settings settings = ImmutableSettings.settingsBuilder()
-      .put("path.data", dataDir)
+    tempDir = new File(".");
+    final Settings settings = Settings.settingsBuilder()
+      .put("path.data", new File(tempDir, "data"))
+      .put("path.home", new File(tempDir, "home"))
       .put("http.enabled", "false")
       .build();
     node = NodeBuilder.nodeBuilder().local(true).settings(settings).build();
@@ -59,7 +60,7 @@ public class EmbeddedElasticsearchServer {
     logger.info("Destroying elasticsearch");
     getClient().close();
     node.close();
-    FileUtils.deleteQuietly(dataDir);
+    FileUtils.deleteQuietly(tempDir);
   }
 
   private void createAndPopulateIndex() {
