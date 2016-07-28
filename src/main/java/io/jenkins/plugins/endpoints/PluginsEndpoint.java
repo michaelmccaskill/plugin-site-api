@@ -2,6 +2,7 @@ package io.jenkins.plugins.endpoints;
 
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.models.Plugins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +25,14 @@ public class PluginsEndpoint {
   @GET
   public Plugins search(
       @QueryParam("q") String query,
-      @DefaultValue("name") @QueryParam("sort") String sort,
+      @DefaultValue("relevance") @QueryParam("sort") SortBy sortBy,
       @QueryParam("labels") List<String> labels,
       @QueryParam("authors") List<String> authors,
       @DefaultValue("") @QueryParam("core")String core,
       @DefaultValue("50") @QueryParam("size") int size,
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
-      return datastoreService.search(query, sort, labels, authors, core, size, page);
+      return datastoreService.search(query, sortBy, labels, authors, core, size, page);
     } catch (DatastoreException e) {
       logger.error("Problem getting plugins", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
