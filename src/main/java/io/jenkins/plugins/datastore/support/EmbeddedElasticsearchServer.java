@@ -43,7 +43,6 @@ public class EmbeddedElasticsearchServer {
       logger.error("Problem creating temp data directory", e);
       throw new RuntimeException(e);
     }
-    tempDir = new File(".");
     final Settings settings = Settings.settingsBuilder()
       .put("path.data", new File(tempDir, "data"))
       .put("path.home", new File(tempDir, "home"))
