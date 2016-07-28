@@ -120,6 +120,9 @@ public class GeneratePluginData {
             installation.put("total", installationsPercentagePerVersion.getDouble(version));
             return installation;
           }).collect(Collectors.toSet())));
+          final String lifetimeKey = installations.keySet().stream().max(String::compareTo).orElse(null);
+          final Long lifetime = lifetimeKey != null ? installations.getLong(lifetimeKey) : 0L;
+          stats.put("lifetime", lifetime);
           plugin.put("stats", stats);
           final JSONArray categories = new JSONArray();
           final JSONArray labels = plugin.optJSONArray("labels");
