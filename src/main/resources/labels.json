@@ -1,97 +1,119 @@
 {
-  "labels":
+  "labels": 
   [
     {
       "id": "ios",
       "title": "iOS development"
     },
+
     {
       "id": "dotnet",
       "title": "Azure and .NET"
     },
+
     {
       "id": "android",
       "title": "Android development"
     },
+
     {
       "id": "ruby",
       "title": "Ruby development"
     },
+
     {
       "id": "scala",
       "title": "Scala plugins"
     },
+
     {
       "id": "ui",
       "title": "User Interface"
     },
+
     {
       "id": "listview-column",
       "title": "List view column plugins"
     },
+
     {
       "id": "slaves",
-      "title": "Agent launchers and controllers"
+      "title": "Agent controllers"
     },
+
     {
       "id": "page-decorator",
       "title": "Page decorators"
     },
+
     {
       "id": "user",
-      "title": "Authentication and user management"
+      "title": "Users and security"
     },
+
     {
       "id": "cluster",
-      "title": "Cluster management and distributed build"
+      "title": "Cluster management"
     },
+
     {
       "id": "cli",
       "title": "CLI extensions"
     },
+
     {
       "id": "trigger",
       "title": "Build triggers"
     },
+
     {
       "id": "buildwrapper",
       "title": "Build wrappers"
     },
+
     {
       "id": "notifier",
       "title": "Build notifiers"
     },
+
     {
       "id": "deployment",
       "title": "Deployment plugins"
     },
+
     {
       "id": "parameter",
       "title": "Build parameters"
     },
+
     {
       "id": "post-build",
       "title": "Clean-up actions"
     },
+
     {
       "id": "builder",
       "title": "Build tools"
     },
+
     {
       "id": "report",
       "title": "Build reports"
     },
+
     {
       "id": "upload",
       "title": "Artifact uploaders"
     },
+
     {
       "id": "scm",
-      "title": "Source Code Management"
+      "title": "SCM connections"
     },
+
     {
       "id": "scm-related",
-      "title": "Source Code Management related"
+      "title": "SCM related"
     }
   ]
 }

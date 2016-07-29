@@ -1,13 +1,17 @@
 {
-  "categories":
+  "categories": 
   [
     {
       "id": "languagesPlatforms",
       "title": "Platforms",
       "description": "Jenkins plugins that are designed to give added support for building, testing or deploying to specific languages or platforms.",
-      "labels":
+      "labels": 
       [
-        "ios", "dotnet", "android", "ruby", "scala"
+        "ios",
+        "dotnet",
+        "android",
+        "ruby",
+        "scala"
       ]
     },
 
@@ -15,9 +19,10 @@
       "id": "userInterface",
       "title": "User interface",
       "description": "Add-ons designed to make your iteraction with Jenkins better.",
-      "labels":
+      "labels": 
       [
-        "ui", "listview-column"
+        "ui",
+        "listview-column"
       ]
     },
 
@@ -25,19 +30,13 @@
       "id": "adminTools",
       "title": "Administration",
       "description": "Add functionality to help streamline your administration of Jenkins.",
-      "labels":
+      "labels": 
       [
-        "slaves", "page-decorator", "user", "cluster", "cli"
-      ]
-    },
-
-    {
-      "id": "buildManagement",
-      "title": "Build management",
-      "description": "Add new means of trigger jobs and new ways to ensure environment consistency for you automated processes.",
-      "labels":
-      [
-        "trigger", "buildwrapper", "notifier", "deployment", "parameter", "post-build", "builder", "report", "upload"
+        "slaves",
+        "page-decorator",
+        "user",
+        "cluster",
+        "cli"
       ]
     },
 
@@ -45,18 +44,41 @@
       "id": "scm",
       "title": "Source code management",
       "description": "Connect to your Jenkins to your SCM.",
-      "labels":
+      "labels": 
       [
-        "scm", "scm-related"
+        "scm",
+        "scm-related"
+      ]
+    },
+
+    {
+      "id": "buildManagement",
+      "title": "Build management",
+      "description": "Add new means of trigger jobs and new ways to ensure environment consistency for you automated processes.",
+      "labels": 
+      [
+        "trigger",
+        "buildwrapper",
+        "notifier",
+        "deployment",
+        "parameter",
+        "post-build",
+        "builder",
+        "report",
+        "upload"
       ]
     },
 
     {
       "id": "junk",
       "hidden": true,
-      "labels":
+      "labels": 
       [
-        "library", "misc", "must-be-labeled", "external", "maven"
+        "library",
+        "misc",
+        "must-be-labeled",
+        "external",
+        "maven"
       ]
     }
   ]
