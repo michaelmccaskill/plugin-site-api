@@ -1,10 +1,12 @@
 package io.jenkins.plugins.datastore.support;
 
 import org.apache.commons.io.FileUtils;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -28,7 +30,7 @@ public class EmbeddedElasticsearchServer {
 
   private final Logger logger = LoggerFactory.getLogger(EmbeddedElasticsearchServer.class);
 
-  private File dataDir;
+  private File tempDir;
   private Node node;
 
   public Client getClient() {
@@ -39,13 +41,13 @@ public class EmbeddedElasticsearchServer {
   public void postConstruct() {
     logger.info("Initialize elasticsearch");
     try {
-      this.dataDir = Files.createTempDirectory("elasticsearch_data").toFile();
+      tempDir = Files.createTempDirectory("elasticsearch_").toFile();
     } catch (IOException e) {
       logger.error("Problem creating temp data directory", e);
       throw new RuntimeException(e);
     }
-    final Settings settings = ImmutableSettings.settingsBuilder()
-      .put("path.data", dataDir)
+    final Settings settings = Settings.settingsBuilder()
+      .put("path.home", tempDir)
       .put("http.enabled", "false")
       .build();
     node = NodeBuilder.nodeBuilder().local(true).settings(settings).build();
@@ -56,8 +58,10 @@ public class EmbeddedElasticsearchServer {
 
   @PreDestroy
   public void preDestroy() {
+    logger.info("Destroying elasticsearch");
+    getClient().close();
     node.close();
-    FileUtils.deleteQuietly(this.dataDir);
+    FileUtils.deleteQuietly(tempDir);
   }
 
   private void createAndPopulateIndex() {
@@ -80,9 +84,16 @@ public class EmbeddedElasticsearchServer {
         final IndexRequest indexRequest = client.prepareIndex(index, "plugins", key).setSource(plugin.toString()).request();
         bulkRequestBuilder.add(indexRequest);
       });
-      client.bulk(bulkRequestBuilder.request()).get();
+      final BulkResponse response = bulkRequestBuilder.get();
+      if (response.hasFailures()) {
+        for (BulkItemResponse item : response.getItems()) {
+          logger.warn("Problem indexing: " + item.getFailureMessage());
+        }
+        throw new ElasticsearchException("Problem bulk indexing");
+      }
       logger.info(String.format("Indexed %d plugins", json.keySet().size()));
       client.admin().indices().prepareAliases().addAlias(index, "plugins").get();
+      client.admin().indices().prepareRefresh("plugins").execute().get();
       logger.info(String.format("Alias plugins points to index %s", index));
     } catch (Exception e) {
       logger.error("Problem creating and populating index", e);

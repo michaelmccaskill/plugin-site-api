@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +35,8 @@ import java.util.stream.Collectors;
 public class GeneratePluginData {
 
   private static final Logger logger = LoggerFactory.getLogger(GeneratePluginData.class);
+
+  private static final DateTimeFormatter BUILD_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
   public static void main(String[] args) {
     final GeneratePluginData generatePluginData = new GeneratePluginData();
@@ -87,10 +91,23 @@ public class GeneratePluginData {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       for (String key : plugins.keySet()) {
         final JSONObject plugin = plugins.getJSONObject(key);
+        final JSONArray categories = new JSONArray();
+        final JSONArray labels = plugin.optJSONArray("labels");
+        for (int i = 0; i < labels.length(); i++) {
+          final String label = labels.getString(i);
+          if (labelToCategoryMap.containsKey(label)) {
+            categories.put(labelToCategoryMap.get(label));
+          }
+        }
+        plugin.put("categories", categories);
+        if (plugin.optString("buildDate", null) != null) {
+          final LocalDate buildDate = LocalDate.parse(plugin.getString("buildDate"), BUILD_DATE_FORMATTER);
+          plugin.put("buildDate", buildDate);
+        }
         final Path file = tempDir.resolve(String.format("plugin-installation-trend%c%s.stats.json", File.separatorChar, key));
+        final JSONObject stats = new JSONObject();
         if (Files.exists(file)) {
           logger.info(String.format("Processing statistics for %s", key));
-          final JSONObject stats = new JSONObject();
           final JSONObject json = new JSONObject(Files.lines(file).collect(Collectors.joining("\n")));
           final JSONObject installations = json.getJSONObject("installations");
           final JSONObject installationsPercentage = json.getJSONObject("installationsPercentage");
@@ -120,19 +137,14 @@ public class GeneratePluginData {
             installation.put("total", installationsPercentagePerVersion.getDouble(version));
             return installation;
           }).collect(Collectors.toSet())));
-          plugin.put("stats", stats);
-          final JSONArray categories = new JSONArray();
-          final JSONArray labels = plugin.optJSONArray("labels");
-          for (int i = 0; i < labels.length(); i++) {
-            final String label = labels.getString(i);
-            if (labelToCategoryMap.containsKey(label)) {
-              categories.put(labelToCategoryMap.get(label));
-            }
-          }
-          plugin.put("categories", categories);
+          final String lifetimeKey = installations.keySet().stream().max(String::compareTo).orElse(null);
+          final Long lifetime = lifetimeKey != null ? installations.getLong(lifetimeKey) : 0L;
+          stats.put("lifetime", lifetime);
         } else {
           logger.warn(String.format("No statistics for %s found", key));
+          stats.put("lifetime", 0L);
         }
+        plugin.put("stats", stats);
       }
     } catch (Exception e) {
       logger.error("Problem processing statistics", e);

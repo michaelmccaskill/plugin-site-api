@@ -6,6 +6,7 @@ import io.jenkins.plugins.models.Plugin;
 import io.jenkins.plugins.models.Plugins;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,14 +15,20 @@ import java.util.Collections;
 
 public class DatastoreServiceTest {
 
+  private static ServiceLocator locator;
   private static DatastoreService datastoreService;
 
   // BeforeClass because there's no reason to start/stop Elasticsearch for every test when
   // all our operations are read-only
   @BeforeClass
   public static void setUp() throws Exception {
-    final ServiceLocator locator  = ServiceLocatorUtilities.bind(new Binder());
+    locator  = ServiceLocatorUtilities.bind(new Binder());
     datastoreService = locator.getService(DatastoreService.class);
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    locator.shutdown();
   }
 
   @Test
@@ -41,6 +48,37 @@ public class DatastoreServiceTest {
     final Plugins plugins = datastoreService.search("git", null, Collections.emptyList(), Collections.emptyList(), null, 50, 1);
     Assert.assertNotNull("Search for 'git' null'", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+  }
+
+  @Test
+  public void testSearchSortByInstalls() {
+    final Plugins plugins = datastoreService.search("git", SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), null, 50, 1);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+  }
+
+  @Test
+  public void testSearchSortByName() {
+    final Plugins plugins = datastoreService.search("git", SortBy.NAME, Collections.emptyList(), Collections.emptyList(), null, 50, 1);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.NAME not correct", plugins.getPlugins().get(0).getName().compareTo(plugins.getPlugins().get(1).getName()) < 0);
+  }
+
+  @Test
+  public void testSearchSortByRelevance() {
+    final Plugins plugins = datastoreService.search("git", SortBy.RELEVANCE, Collections.emptyList(), Collections.emptyList(), null, 50, 1);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+  }
+
+  @Test
+  public void testSearchSortByUpdated() {
+    final Plugins plugins = datastoreService.search("git", SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), null, 50, 1);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
   }
 
   @Test

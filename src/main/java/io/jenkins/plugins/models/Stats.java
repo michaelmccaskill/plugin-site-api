@@ -20,14 +20,18 @@ public class Stats {
   @JsonProperty("installationsPercentagePerVersion")
   private List<InstallationPercentageVersion> installationsPercentagePerVersion;
 
+  @JsonProperty("lifetime")
+  private int lifetime;
+
   public Stats() {
   }
 
-  public Stats(List<Installation> installations, List<InstallationPercentage> installationsPercentage, List<InstallationVersion> installationsPerVersion, List<InstallationPercentageVersion> installationsPercentagePerVersion) {
+  public Stats(List<Installation> installations, List<InstallationPercentage> installationsPercentage, List<InstallationVersion> installationsPerVersion, List<InstallationPercentageVersion> installationsPercentagePerVersion, int lifetime) {
     this.installations = installations;
     this.installationsPercentage = installationsPercentage;
     this.installationsPerVersion = installationsPerVersion;
     this.installationsPercentagePerVersion = installationsPercentagePerVersion;
+    this.lifetime = lifetime;
   }
 
   public List<Installation> getInstallations() {
@@ -60,5 +64,13 @@ public class Stats {
 
   public void setInstallationsPercentagePerVersion(List<InstallationPercentageVersion> installationsPercentagePerVersion) {
     this.installationsPercentagePerVersion = installationsPercentagePerVersion;
+  }
+
+  public int getLifetime() {
+    return lifetime;
+  }
+
+  public void setLifetime(int lifetime) {
+    this.lifetime = lifetime;
   }
 }

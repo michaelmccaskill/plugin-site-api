@@ -3,6 +3,7 @@ package io.jenkins.plugins.datastore.impl;
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import io.jenkins.plugins.models.*;
 import org.apache.commons.io.FileUtils;
@@ -14,6 +15,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -34,7 +37,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   private Client esClient;
 
   @Override
-  public Plugins search(String query, String sort, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
+  public Plugins search(String query, SortBy sortBy, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .setFrom((page - 1) * size)
@@ -50,6 +53,20 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         requestBuilder.setQuery(queryBuilder);
       } else {
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
+      }
+      if (sortBy != null) {
+        switch (sortBy) {
+          case INSTALLS:
+            requestBuilder.addSort(SortBuilders.fieldSort("stats.lifetime").setNestedPath("stats").order(SortOrder.DESC));
+            break;
+          case NAME:
+            requestBuilder.addSort(SortBuilders.fieldSort("name").order(SortOrder.ASC));
+            break;
+          case UPDATED:
+            requestBuilder.addSort(SortBuilders.fieldSort("buildDate").order(SortOrder.DESC));
+            break;
+          case RELEVANCE: break;
+        }
       }
       final SearchResponse response = requestBuilder.execute().get();
       final long total = response.getHits().getTotalHits();
@@ -67,11 +84,12 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public Plugin getPlugin(String name) {
+  public Plugin getPlugin(String name) throws DatastoreException {
     try {
       final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
       return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse, Plugin.class) : null;
     } catch (Exception e) {
+        logger.error("Problem executing ES query", e);
         throw new DatastoreException("Problem executing ES query", e);
     }
   }
@@ -105,7 +123,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       final List<Label> labels = new ArrayList<>();
       final StringTerms agg = response.getAggregations().get("labels");
       agg.getBuckets().forEach((entry) -> {
-        final String key = entry.getKey();
+        final String key = entry.getKeyAsString();
         final Label label = new Label(
           key, labelTitleMap.getOrDefault(key, null)
         );
