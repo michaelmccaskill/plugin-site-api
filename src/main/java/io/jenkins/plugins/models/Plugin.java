@@ -1,15 +1,29 @@
 package io.jenkins.plugins.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Plugin {
 
+  // Shouldn't have do specify serializer/deserializer but it produces a JSON object
+  // if the JavaTimeModule is registered
   @JsonProperty("buildDate")
-  private String buildDate; // date - MMM dd, YYYY
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  @JsonSerialize(using = LocalDateSerializer.class)
+  @JsonDeserialize(using = LocalDateDeserializer.class)
+  private LocalDate buildDate;
 
   @JsonProperty("categories")
   private List<String> categories;
@@ -32,14 +46,24 @@ public class Plugin {
   @JsonProperty("name")
   private String name;
 
+  // Shouldn't have do specify serializer/deserializer but it produces a JSON object
+  // if the JavaTimeModule is registered
   @JsonProperty("previousTimestamp")
-  private String previousTimestamp; // ISO-8601 date 2016-07-21T17:40:28Z
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  private LocalDateTime previousTimestamp;
 
   @JsonProperty("previousVersion")
   private String previousVersion;
 
-  @JsonProperty("releaseTimetamp")
-  private String releaseTimestamp;  // ISO-8601 date 2016-07-21T17:40:28Z
+  // Shouldn't have do specify serializer/deserializer but it produces a JSON object
+  // if the JavaTimeModule is registered
+  @JsonProperty("releaseTimestamp")
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  private LocalDateTime releaseTimestamp;
 
   @JsonProperty("requiredCore")
   private String requiredCore;
@@ -68,9 +92,9 @@ public class Plugin {
   public Plugin() {
   }
 
-  public Plugin(String buildDate, List<String> categories, List<Dependency> dependencies, List<Developer> developers,
-                String excerpt, String gav, List<String> labels, String name, String previousTimestamp,
-                String previousVersion, String releaseTimestamp, String requiredCore, String scm, String sha1,
+  public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Developer> developers,
+                String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
+                String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, String scm, String sha1,
                 Stats stats, String title, String url, String version, String wiki) {
     this.buildDate = buildDate;
     this.categories = categories;
@@ -93,11 +117,11 @@ public class Plugin {
     this.wiki = wiki;
   }
 
-  public String getBuildDate() {
+  public LocalDate getBuildDate() {
     return buildDate;
   }
 
-  public void setBuildDate(String buildDate) {
+  public void setBuildDate(LocalDate buildDate) {
     this.buildDate = buildDate;
   }
 
@@ -157,11 +181,11 @@ public class Plugin {
     this.name = name;
   }
 
-  public String getPreviousTimestamp() {
+  public LocalDateTime getPreviousTimestamp() {
     return previousTimestamp;
   }
 
-  public void setPreviousTimestamp(String previousTimestamp) {
+  public void setPreviousTimestamp(LocalDateTime previousTimestamp) {
     this.previousTimestamp = previousTimestamp;
   }
 
@@ -173,11 +197,11 @@ public class Plugin {
     this.previousVersion = previousVersion;
   }
 
-  public String getReleaseTimestamp() {
+  public LocalDateTime getReleaseTimestamp() {
     return releaseTimestamp;
   }
 
-  public void setReleaseTimestamp(String releaseTimestamp) {
+  public void setReleaseTimestamp(LocalDateTime releaseTimestamp) {
     this.releaseTimestamp = releaseTimestamp;
   }
 
