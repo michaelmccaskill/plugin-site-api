@@ -1,5 +1,6 @@
 package io.jenkins.plugins;
 
+import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.models.Categories;
 import io.jenkins.plugins.models.Labels;
 import io.jenkins.plugins.models.Plugin;
@@ -12,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.ws.rs.core.Application;
+import java.util.Collections;
 
 public class RestAppIntegrationTest extends JerseyTest {
 
@@ -42,6 +44,37 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Plugins plugins = target("/plugins").queryParam("q", "git").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null'", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+  }
+
+  @Test
+  public void testSearchSortByInstalls() {
+    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "installs").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+  }
+
+  @Test
+  public void testSearchSortByName() {
+    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "name").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.NAME not correct", plugins.getPlugins().get(0).getName().compareTo(plugins.getPlugins().get(1).getName()) < 0);
+  }
+
+  @Test
+  public void testSearchSortByRelevance() {
+    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "relevance").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+  }
+
+  @Test
+  public void testSearchSortByUpdated() {
+    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "updated").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
   }
 
   @Test

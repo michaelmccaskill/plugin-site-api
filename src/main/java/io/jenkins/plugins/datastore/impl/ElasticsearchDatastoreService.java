@@ -57,7 +57,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       if (sortBy != null) {
         switch (sortBy) {
           case INSTALLS:
-            requestBuilder.addSort(SortBuilders.fieldSort("lifetime").order(SortOrder.DESC));
+            requestBuilder.addSort(SortBuilders.fieldSort("stats.lifetime").setNestedPath("stats").order(SortOrder.DESC));
             break;
           case NAME:
             requestBuilder.addSort(SortBuilders.fieldSort("name").order(SortOrder.ASC));
@@ -84,11 +84,12 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public Plugin getPlugin(String name) {
+  public Plugin getPlugin(String name) throws DatastoreException {
     try {
       final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
       return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse, Plugin.class) : null;
     } catch (Exception e) {
+        logger.error("Problem executing ES query", e);
         throw new DatastoreException("Problem executing ES query", e);
     }
   }
