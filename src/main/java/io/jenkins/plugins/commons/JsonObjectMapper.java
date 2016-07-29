@@ -11,8 +11,7 @@ public final class JsonObjectMapper {
   }
 
   private static ObjectMapper createObjectMapper() {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    return objectMapper;
+    return new ObjectMapper();
   }
 
 }
