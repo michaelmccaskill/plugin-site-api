@@ -3,7 +3,7 @@
     "properties" : {
       "buildDate" : {
         "type" : "date",
-        "format" : "MMM dd, YYYY"
+        "format" : "date"
       },
       "categories" : {
         "type" : "string",
