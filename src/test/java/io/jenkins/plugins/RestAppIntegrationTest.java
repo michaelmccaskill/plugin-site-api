@@ -1,10 +1,7 @@
 package io.jenkins.plugins;
 
 import io.jenkins.plugins.datastore.SortBy;
-import io.jenkins.plugins.models.Categories;
-import io.jenkins.plugins.models.Labels;
-import io.jenkins.plugins.models.Plugin;
-import io.jenkins.plugins.models.Plugins;
+import io.jenkins.plugins.models.*;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.jetty.JettyTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerException;
@@ -13,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.ws.rs.core.Application;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class RestAppIntegrationTest extends JerseyTest {
@@ -75,6 +73,43 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertNotNull("Search for 'git' null'", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
+  }
+
+  @Test
+  public void testSearchLabels() {
+    final Plugins plugins = target("/plugins").queryParam("labels", "scm").request().get(Plugins.class);
+    Assert.assertNotNull("Search for labels 'scm' is null'", plugins);
+    for (Plugin plugin : plugins.getPlugins()) {
+      if (plugin.getLabels().contains("scm")) {
+        return;
+      }
+    }
+    Assert.fail("Didn't find plugins with labels 'scm");
+  }
+
+  @Test
+  public void testSearchAuthors() {
+    final Plugins plugins = target("/plugins").queryParam("authors", "Kohsuke Kawaguchi").request().get(Plugins.class);
+    Assert.assertNotNull("Search for categories 'scm' is null", plugins);
+    for (Plugin plugin : plugins.getPlugins()) {
+      for (Developer developer : plugin.getDevelopers()) {
+        if (developer.getName().equalsIgnoreCase("Kohsuke Kawaguchi")) {
+          return;
+        }
+      }
+    }
+    Assert.fail("Didn't find plugins with authors 'Kohsuke Kawaguchi'");
+  }
+
+  @Test
+  public void testSearchRequiredCore() {
+    final Plugins plugins = target("/plugins").queryParam("core", "1.505").request().get(Plugins.class);
+    Assert.assertNotNull("Search for requiredCore is null'", plugins);
+    for (Plugin plugin : plugins.getPlugins()) {
+      if (!plugin.getRequiredCore().equals("1.505")) {
+        Assert.fail("Found plugin with requiredCore not '1.505'");
+      }
+    }
   }
 
   @Test

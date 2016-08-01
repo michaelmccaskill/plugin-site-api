@@ -42,18 +42,25 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .setFrom((page - 1) * size)
         .setSize(size);
+      final BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
       if (query != null && !query.trim().isEmpty()) {
-        final BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+        queryBuilder
           .should(QueryBuilders.matchQuery("title", query))
           .should(QueryBuilders.matchQuery("name", query))
           .must(QueryBuilders.matchQuery("excerpt", query));
-        if (!labels.isEmpty()) {
-          queryBuilder.should(QueryBuilders.termsQuery("labels", labels));
-        }
-        requestBuilder.setQuery(queryBuilder);
       } else {
-        requestBuilder.setQuery(QueryBuilders.matchAllQuery());
+        queryBuilder.must(QueryBuilders.matchAllQuery());
       }
+      if (!labels.isEmpty()) {
+        queryBuilder.must(QueryBuilders.termsQuery("labels", labels));
+      }
+      if (!authors.isEmpty()) {
+        queryBuilder.must(QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", authors)));
+      }
+      if (core != null && !core.trim().isEmpty()) {
+        queryBuilder.must(QueryBuilders.termQuery("requiredCore", core));
+      }
+      requestBuilder.setQuery(queryBuilder);
       if (sortBy != null) {
         switch (sortBy) {
           case INSTALLS:
