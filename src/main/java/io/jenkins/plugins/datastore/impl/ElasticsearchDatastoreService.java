@@ -37,7 +37,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   private Client esClient;
 
   @Override
-  public Plugins search(String query, SortBy sortBy, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
+  public Plugins search(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .setFrom((page - 1) * size)
@@ -50,6 +50,9 @@ public class ElasticsearchDatastoreService implements DatastoreService {
           .must(QueryBuilders.matchQuery("excerpt", query));
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
+      }
+      if (!categories.isEmpty()) {
+        queryBuilder.must(QueryBuilders.termsQuery("categories", categories));
       }
       if (!labels.isEmpty()) {
         queryBuilder.must(QueryBuilders.termsQuery("labels", labels));

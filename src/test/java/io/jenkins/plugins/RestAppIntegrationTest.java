@@ -76,6 +76,18 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
+  public void testSearchCategories() {
+    final Plugins plugins = target("/plugins").queryParam("categories", "scm").request().get(Plugins.class);
+    Assert.assertNotNull("Search for categories 'scm' is null'", plugins);
+    for (Plugin plugin : plugins.getPlugins()) {
+      if (plugin.getLabels().contains("scm")) {
+        return;
+      }
+    }
+    Assert.fail("Didn't find plugins with categories 'scm");
+  }
+
+  @Test
   public void testSearchLabels() {
     final Plugins plugins = target("/plugins").queryParam("labels", "scm").request().get(Plugins.class);
     Assert.assertNotNull("Search for labels 'scm' is null'", plugins);
