@@ -151,17 +151,19 @@ public class RestAppIntegrationTest extends JerseyTest {
   @Test
   public void testGetMostDownloaded() {
     final Plugins plugins = target("/plugins/downloaded").request().get(Plugins.class);
-    Assert.assertNotNull("Search for 'git' null", plugins);
+    Assert.assertNotNull("Most downloaded null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+    Assert.assertTrue("Most downloaded order not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+    Assert.assertEquals("Most downloaded size doesn't match", plugins.getSize(), plugins.getPlugins().size());
   }
 
   @Test
   public void testGetRecentlyUpdated() {
     final Plugins plugins = target("/plugins/updated").request().get(Plugins.class);
-    Assert.assertNotNull("Search for 'git' null", plugins);
+    Assert.assertNotNull("Recently updated null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
+    Assert.assertTrue("Recently updated order not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
+    Assert.assertEquals("Recently updated size doesn't match", plugins.getSize(), plugins.getPlugins().size());
   }
 
 }
