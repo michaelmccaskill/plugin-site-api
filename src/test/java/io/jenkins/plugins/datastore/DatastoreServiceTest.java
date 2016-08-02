@@ -44,14 +44,14 @@ public class DatastoreServiceTest {
   @Test
   public void testSearch() {
     final Plugins plugins = datastoreService.search("git", null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for 'git' is null'", plugins);
+    Assert.assertNotNull("Search for 'git' is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
   }
 
   @Test
   public void testSearchSortByInstalls() {
     final Plugins plugins = datastoreService.search("git", SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for 'git' sort by installs is null'", plugins);
+    Assert.assertNotNull("Search for 'git' sort by installs is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
   }
@@ -59,7 +59,7 @@ public class DatastoreServiceTest {
   @Test
   public void testSearchSortByName() {
     final Plugins plugins = datastoreService.search("git", SortBy.NAME,Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for 'git' sort by name is null'", plugins);
+    Assert.assertNotNull("Search for 'git' sort by name is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.NAME not correct", plugins.getPlugins().get(0).getName().compareTo(plugins.getPlugins().get(1).getName()) < 0);
   }
@@ -67,14 +67,14 @@ public class DatastoreServiceTest {
   @Test
   public void testSearchSortByRelevance() {
     final Plugins plugins = datastoreService.search("git", SortBy.RELEVANCE, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for 'git' sort by relevance is null'", plugins);
+    Assert.assertNotNull("Search for 'git' sort by relevance is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
   }
 
   @Test
   public void testSearchSortByUpdated() {
     final Plugins plugins = datastoreService.search("git", SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for 'git' sort by updated is null'", plugins);
+    Assert.assertNotNull("Search for 'git' sort by updated is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
   }
@@ -82,25 +82,25 @@ public class DatastoreServiceTest {
   @Test
   public void testSearchCategories() {
     final Plugins plugins = datastoreService.search(null, null, Arrays.asList("scm"), Collections.emptyList(), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for categories 'scm' is null'", plugins);
+    Assert.assertNotNull("Search for categories 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       if (plugin.getCategories().contains("scm")) {
         return;
       }
     }
-    Assert.fail("Didn't find plugins with categories 'scm");
+    Assert.fail("Didn't find plugins with categories 'scm'");
   }
 
   @Test
   public void testSearchLabels() {
     final Plugins plugins = datastoreService.search(null, null, Collections.emptyList(), Arrays.asList("scm"), Collections.emptyList(), null, 50, 1);
-    Assert.assertNotNull("Search for labels 'scm' is null'", plugins);
+    Assert.assertNotNull("Search for labels 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       if (plugin.getLabels().contains("scm")) {
         return;
       }
     }
-    Assert.fail("Didn't find plugins with labels 'scm");
+    Assert.fail("Didn't find plugins with labels 'scm'");
   }
 
   @Test
@@ -120,7 +120,7 @@ public class DatastoreServiceTest {
   @Test
   public void testSearchRequiredCore() {
     final Plugins plugins = datastoreService.search(null , null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "1.505", 50, 1);
-    Assert.assertNotNull("Search for requiredCore is null'", plugins);
+    Assert.assertNotNull("Search for requiredCore is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       if (!plugin.getRequiredCore().equals("1.505")) {
         Assert.fail("Found plugin with requiredCore not '1.505'");
@@ -131,7 +131,7 @@ public class DatastoreServiceTest {
   @Test
   public void testGetCategories() {
     final Categories categories = datastoreService.getCategories();
-    Assert.assertNotNull("Categories null'", categories);
+    Assert.assertNotNull("Categories null", categories);
     Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
     Assert.assertEquals("Categories total doesn't match", categories.getTotal(), categories.getCategories().size());
   }
@@ -139,7 +139,7 @@ public class DatastoreServiceTest {
   @Test
   public void testGetDevelopers() {
     final Developers developers = datastoreService.getDevelopers();
-    Assert.assertNotNull("Developers null'", developers);
+    Assert.assertNotNull("Developers null", developers);
     Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
     Assert.assertEquals("Developers total doesn't match", developers.getTotal(), developers.getDevelopers().size());
   }
@@ -147,7 +147,7 @@ public class DatastoreServiceTest {
   @Test
   public void testGetLabels() {
     final Labels labels = datastoreService.getLabels();
-    Assert.assertNotNull("Labels null'", labels);
+    Assert.assertNotNull("Labels null", labels);
     Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
     Assert.assertEquals("Labels total doesn't match", labels.getTotal(), labels.getLabels().size());
   }
