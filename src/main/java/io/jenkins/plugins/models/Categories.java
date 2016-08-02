@@ -11,11 +11,15 @@ public class Categories {
   @JsonProperty("categories")
   private List<Category> categories;
 
+  @JsonProperty("total")
+  private int total;
+
   public Categories() {
   }
 
   public Categories(List<Category> categories) {
     this.categories = categories;
+    this.total = categories.size();
   }
 
   public List<Category> getCategories() {
@@ -24,5 +28,13 @@ public class Categories {
 
   public void setCategories(List<Category> categories) {
     this.categories = categories;
+  }
+
+  public int getTotal() {
+    return total;
+  }
+
+  public void setTotal(int total) {
+    this.total = total;
   }
 }

@@ -129,6 +129,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Labels labels = target("/labels").request().get(Labels.class);
     Assert.assertNotNull("Labels null'", labels);
     Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
+    Assert.assertEquals("Labels total doesn't match", labels.getTotal(), labels.getLabels().size());
   }
 
   @Test
@@ -136,6 +137,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Categories categories = target("/categories").request().get(Categories.class);
     Assert.assertNotNull("Categories null'", categories);
     Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
+    Assert.assertEquals("Categories total doesn't match", categories.getTotal(), categories.getCategories().size());
   }
 
   @Test
@@ -143,6 +145,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Developers developers = target("/developers").request().get(Developers.class);
     Assert.assertNotNull("Developers null'", developers);
     Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
+    Assert.assertEquals("Developers total doesn't match", developers.getTotal(), developers.getDevelopers().size());
   }
 
 }
