@@ -136,6 +136,13 @@ public class DatastoreServiceTest {
   }
 
   @Test
+  public void testGetDevelopers() {
+    final Developers developers = datastoreService.getDevelopers();
+    Assert.assertNotNull("Developers null'", developers);
+    Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
+  }
+
+  @Test
   public void testGetLabels() {
     final Labels labels = datastoreService.getLabels();
     Assert.assertNotNull("Labels null'", labels);

@@ -14,6 +14,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -119,6 +120,28 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     } catch (Exception e) {
       logger.error("Problem getting categories", e);
       throw new DatastoreException("Problem getting categories", e);
+    }
+  }
+
+  @Override
+  public Developers getDevelopers() throws DatastoreException {
+    try {
+      final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
+        .addAggregation(AggregationBuilders.nested("developers").path("developers")
+          .subAggregation(AggregationBuilders.terms("developers").field("developers.name.raw").size(0))
+        )
+        .setSize(0);
+      final SearchResponse response = requestBuilder.execute().get();
+      final List<String> developers = new ArrayList<>();
+      final InternalNested nested = response.getAggregations().get("developers");
+      final StringTerms agg = nested.getAggregations().get("developers");
+      agg.getBuckets().forEach((entry) -> {
+        developers.add(entry.getKeyAsString());
+      });
+      return new Developers(developers);
+    } catch (Exception e) {
+      logger.error("Problem getting developers", e);
+      throw new DatastoreException("Problem getting developers", e);
     }
   }
 

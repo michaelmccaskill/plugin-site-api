@@ -138,4 +138,11 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
   }
 
+  @Test
+  public void testGetDevelopers() {
+    final Developers developers = target("/developers").request().get(Developers.class);
+    Assert.assertNotNull("Developers null'", developers);
+    Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
+  }
+
 }
