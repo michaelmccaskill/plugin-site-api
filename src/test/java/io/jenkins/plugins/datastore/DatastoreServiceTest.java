@@ -133,7 +133,7 @@ public class DatastoreServiceTest {
     final Categories categories = datastoreService.getCategories();
     Assert.assertNotNull("Categories null", categories);
     Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
-    Assert.assertEquals("Categories total doesn't match", categories.getTotal(), categories.getCategories().size());
+    Assert.assertEquals("Categories limit doesn't match", categories.getLimit(), categories.getCategories().size());
   }
 
   @Test
@@ -141,7 +141,7 @@ public class DatastoreServiceTest {
     final Developers developers = datastoreService.getDevelopers();
     Assert.assertNotNull("Developers null", developers);
     Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
-    Assert.assertEquals("Developers total doesn't match", developers.getTotal(), developers.getDevelopers().size());
+    Assert.assertEquals("Developers limit doesn't match", developers.getLimit(), developers.getDevelopers().size());
   }
 
   @Test
@@ -149,7 +149,7 @@ public class DatastoreServiceTest {
     final Labels labels = datastoreService.getLabels();
     Assert.assertNotNull("Labels null", labels);
     Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
-    Assert.assertEquals("Labels total doesn't match", labels.getTotal(), labels.getLabels().size());
+    Assert.assertEquals("Labels limit doesn't match", labels.getLimit(), labels.getLabels().size());
   }
 
 

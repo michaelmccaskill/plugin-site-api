@@ -129,7 +129,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Labels labels = target("/labels").request().get(Labels.class);
     Assert.assertNotNull("Labels null", labels);
     Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
-    Assert.assertEquals("Labels total doesn't match", labels.getTotal(), labels.getLabels().size());
+    Assert.assertEquals("Labels limit doesn't match", labels.getLimit(), labels.getLabels().size());
   }
 
   @Test
@@ -137,7 +137,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Categories categories = target("/categories").request().get(Categories.class);
     Assert.assertNotNull("Categories null", categories);
     Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
-    Assert.assertEquals("Categories total doesn't match", categories.getTotal(), categories.getCategories().size());
+    Assert.assertEquals("Categories limit doesn't match", categories.getLimit(), categories.getCategories().size());
   }
 
   @Test
@@ -145,7 +145,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Developers developers = target("/developers").request().get(Developers.class);
     Assert.assertNotNull("Developers null", developers);
     Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
-    Assert.assertEquals("Developers total doesn't match", developers.getTotal(), developers.getDevelopers().size());
+    Assert.assertEquals("Developers limit doesn't match", developers.getLimit(), developers.getDevelopers().size());
   }
 
   @Test
@@ -154,7 +154,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertNotNull("Most downloaded null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("Most downloaded order not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
-    Assert.assertEquals("Most downloaded size doesn't match", plugins.getSize(), plugins.getPlugins().size());
+    Assert.assertEquals("Most downloaded limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
   }
 
   @Test
@@ -163,7 +163,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertNotNull("Recently updated null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("Recently updated order not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
-    Assert.assertEquals("Recently updated size doesn't match", plugins.getSize(), plugins.getPlugins().size());
+    Assert.assertEquals("Recently updated limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
   }
 
 }

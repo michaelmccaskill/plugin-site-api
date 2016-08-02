@@ -20,8 +20,8 @@ public class Plugins {
   @JsonProperty("total")
   private long total;
 
-  @JsonProperty("size")
-  private int size;
+  @JsonProperty("limit")
+  private int limit;
 
   public Plugins() {
   }
@@ -31,7 +31,7 @@ public class Plugins {
     this.page = page;
     this.pages = pages;
     this.total = total;
-    this.size = plugins.size();
+    this.limit = plugins.size();
   }
 
   public List<Plugin> getPlugins() {
@@ -66,11 +66,11 @@ public class Plugins {
     this.total = total;
   }
 
-  public int getSize() {
-    return size;
+  public int getLimit() {
+    return limit;
   }
 
-  public void setSize(int size) {
-    this.size = size;
+  public void setLimit(int limit) {
+    this.limit = limit;
   }
 }

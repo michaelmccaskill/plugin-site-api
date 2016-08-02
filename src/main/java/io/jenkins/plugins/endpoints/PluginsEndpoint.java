@@ -32,10 +32,10 @@ public class PluginsEndpoint {
       @QueryParam("labels") List<String> labels,
       @QueryParam("authors") List<String> authors,
       @DefaultValue("") @QueryParam("core")String core,
-      @DefaultValue("50") @QueryParam("size") int size,
+      @DefaultValue("50") @QueryParam("limit") int limit,
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
-      return datastoreService.search(new SearchOptions(query, sortBy, categories, labels, authors, core, size, page));
+      return datastoreService.search(new SearchOptions(query, sortBy, categories, labels, authors, core, limit, page));
     } catch (DatastoreException e) {
       logger.error("Problem getting plugins", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -44,9 +44,9 @@ public class PluginsEndpoint {
 
   @Path("/downloaded")
   @GET
-  public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("size") int size) {
+  public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
-      return datastoreService.search(new SearchOptions(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, size, 1));
+      return datastoreService.search(new SearchOptions(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
     } catch (DatastoreException e) {
       logger.error("Problem getting most downloaded", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -55,9 +55,9 @@ public class PluginsEndpoint {
 
   @Path("/updated")
   @GET
-  public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("size") int size) {
+  public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
-      return datastoreService.search(new SearchOptions(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, size, 1));
+      return datastoreService.search(new SearchOptions(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
     } catch (DatastoreException e) {
       logger.error("Problem getting recently updated", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);

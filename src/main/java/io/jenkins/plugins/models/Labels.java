@@ -11,15 +11,15 @@ public class Labels {
   @JsonProperty("labels")
   private List<Label> labels;
 
-  @JsonProperty("total")
-  private int total;
+  @JsonProperty("limit")
+  private int limit;
 
   public Labels() {
   }
 
   public Labels(List<Label> labels) {
     this.labels = labels;
-    this.total = labels.size();
+    this.limit = labels.size();
   }
 
   public List<Label> getLabels() {
@@ -30,11 +30,11 @@ public class Labels {
     this.labels = labels;
   }
 
-  public int getTotal() {
-    return total;
+  public int getLimit() {
+    return limit;
   }
 
-  public void setTotal(int total) {
-    this.total = total;
+  public void setLimit(int limit) {
+    this.limit = limit;
   }
 }

@@ -11,15 +11,15 @@ public class Developers {
   @JsonProperty("developers")
   private List<String> developers;
 
-  @JsonProperty("total")
-  private int total;
+  @JsonProperty("limit")
+  private int limit;
 
   public Developers() {
   }
 
   public Developers(List<String> developers) {
     this.developers = developers;
-    this.total = developers.size();
+    this.limit = developers.size();
   }
 
   public List<String> getDevelopers() {
@@ -30,11 +30,11 @@ public class Developers {
     this.developers = developers;
   }
 
-  public int getTotal() {
-    return total;
+  public int getLimit() {
+    return limit;
   }
 
-  public void setTotal(int total) {
-    this.total = total;
+  public void setLimit(int limit) {
+    this.limit = limit;
   }
 }
