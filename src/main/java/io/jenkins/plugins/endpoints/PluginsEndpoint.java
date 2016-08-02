@@ -43,9 +43,9 @@ public class PluginsEndpoint {
 
   @Path("/downloaded")
   @GET
-  public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("limit") int limit) {
+  public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("size") int size) {
     try {
-      return datastoreService.search(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1);
+      return datastoreService.search(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, size, 1);
     } catch (DatastoreException e) {
       logger.error("Problem getting most downloaded", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -54,9 +54,9 @@ public class PluginsEndpoint {
 
   @Path("/updated")
   @GET
-  public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("limit") int limit) {
+  public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("size") int size) {
     try {
-      return datastoreService.search(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1);
+      return datastoreService.search(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, size, 1);
     } catch (DatastoreException e) {
       logger.error("Problem getting recently updated", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
