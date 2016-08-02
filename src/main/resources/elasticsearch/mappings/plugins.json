@@ -60,7 +60,13 @@
       },
       "name" : {
         "type" : "string",
-        "index" : "not_analyzed"
+        "index" : "not_analyzed",
+        "fields" : {
+          "raw" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          }
+        }
       },
       "previousTimestamp" : {
         "type" : "date",

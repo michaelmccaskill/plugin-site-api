@@ -72,7 +72,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
             requestBuilder.addSort(SortBuilders.fieldSort("stats.lifetime").setNestedPath("stats").order(SortOrder.DESC));
             break;
           case NAME:
-            requestBuilder.addSort(SortBuilders.fieldSort("name").order(SortOrder.ASC));
+            requestBuilder.addSort(SortBuilders.fieldSort("name.raw").order(SortOrder.ASC));
             break;
           case UPDATED:
             requestBuilder.addSort(SortBuilders.fieldSort("buildDate").order(SortOrder.DESC));
