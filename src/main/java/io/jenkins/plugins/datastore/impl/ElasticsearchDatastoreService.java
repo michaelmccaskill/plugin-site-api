@@ -3,6 +3,7 @@ package io.jenkins.plugins.datastore.impl;
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
+import io.jenkins.plugins.datastore.SearchOptions;
 import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import io.jenkins.plugins.models.*;
@@ -38,35 +39,35 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   private Client esClient;
 
   @Override
-  public Plugins search(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> authors, String core, Integer size, Integer page) throws DatastoreException {
+  public Plugins search(SearchOptions searchOptions) throws DatastoreException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
-        .setFrom((page - 1) * size)
-        .setSize(size);
+        .setFrom((searchOptions.getPage() - 1) * searchOptions.getSize())
+        .setSize(searchOptions.getSize());
       final BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-      if (query != null && !query.trim().isEmpty()) {
+      if (searchOptions.getQuery() != null) {
         queryBuilder
-          .should(QueryBuilders.matchQuery("title", query))
-          .should(QueryBuilders.matchQuery("name", query))
-          .must(QueryBuilders.matchQuery("excerpt", query));
+          .should(QueryBuilders.matchQuery("title", searchOptions.getQuery()))
+          .should(QueryBuilders.matchQuery("name", searchOptions.getQuery()))
+          .must(QueryBuilders.matchQuery("excerpt", searchOptions.getQuery()));
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
       }
-      if (!categories.isEmpty()) {
-        queryBuilder.must(QueryBuilders.termsQuery("categories", categories));
+      if (!searchOptions.getCategories().isEmpty()) {
+        queryBuilder.must(QueryBuilders.termsQuery("categories", searchOptions.getCategories()));
       }
-      if (!labels.isEmpty()) {
-        queryBuilder.must(QueryBuilders.termsQuery("labels", labels));
+      if (!searchOptions.getLabels().isEmpty()) {
+        queryBuilder.must(QueryBuilders.termsQuery("labels", searchOptions.getLabels()));
       }
-      if (!authors.isEmpty()) {
-        queryBuilder.must(QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", authors)));
+      if (!searchOptions.getAuthors().isEmpty()) {
+        queryBuilder.must(QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", searchOptions.getAuthors())));
       }
-      if (core != null && !core.trim().isEmpty()) {
-        queryBuilder.must(QueryBuilders.termQuery("requiredCore", core));
+      if (searchOptions.getCore() != null) {
+        queryBuilder.must(QueryBuilders.termQuery("requiredCore", searchOptions.getCore()));
       }
       requestBuilder.setQuery(queryBuilder);
-      if (sortBy != null) {
-        switch (sortBy) {
+      if (searchOptions.getSortBy() != null) {
+        switch (searchOptions.getSortBy()) {
           case INSTALLS:
             requestBuilder.addSort(SortBuilders.fieldSort("stats.lifetime").setNestedPath("stats").order(SortOrder.DESC));
             break;
@@ -81,10 +82,10 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       }
       final SearchResponse response = requestBuilder.execute().get();
       final long total = response.getHits().getTotalHits();
-      final long pages = (total + size - 1) / size;
+      final long pages = (total + searchOptions.getSize() - 1) / searchOptions.getSize();
       return new Plugins(
         ElasticsearchTransformer.transformHits(response.getHits()),
-        page, pages, total
+        searchOptions.getPage(), pages, total
       );
     } catch (Exception e) {
       logger.error("Problem executing, ES query", e);

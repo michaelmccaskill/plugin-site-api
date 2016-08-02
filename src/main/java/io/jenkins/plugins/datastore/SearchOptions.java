@@ -1,0 +1,91 @@
+package io.jenkins.plugins.datastore;
+
+import java.util.Collections;
+import java.util.List;
+
+public class SearchOptions {
+
+  private String query;
+  private SortBy sortBy;
+  private List<String> categories;
+  private List<String> labels;
+  private List<String> authors;
+  private String core;
+  private Integer size;
+  private Integer page;
+
+  public SearchOptions(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> authors, String core, Integer size, Integer page) {
+    setQuery(query);
+    setSortBy(sortBy);
+    setCategories(categories);
+    setLabels(labels);
+    setAuthors(authors);
+    setCore(core);
+    setSize(size);
+    setPage(page);
+  }
+
+  public String getQuery() {
+    return query;
+  }
+
+  public void setQuery(String query) {
+    this.query = query != null && !query.trim().isEmpty() ? query.trim() : null;
+  }
+
+  public SortBy getSortBy() {
+    return sortBy;
+  }
+
+  public void setSortBy(SortBy sortBy) {
+    this.sortBy = sortBy != null ? sortBy : SortBy.RELEVANCE;
+  }
+
+  public List<String> getCategories() {
+    return categories;
+  }
+
+  public void setCategories(List<String> categories) {
+    this.categories = categories != null ? categories : Collections.emptyList();
+  }
+
+  public List<String> getLabels() {
+    return labels;
+  }
+
+  public void setLabels(List<String> labels) {
+    this.labels = labels != null ? labels : Collections.emptyList();
+  }
+
+  public List<String> getAuthors() {
+    return authors;
+  }
+
+  public void setAuthors(List<String> authors) {
+    this.authors = authors != null ? authors : Collections.emptyList();
+  }
+
+  public String getCore() {
+    return core;
+  }
+
+  public void setCore(String core) {
+    this.core = core != null && !core.trim().isEmpty() ? core.trim() : null;
+  }
+
+  public Integer getSize() {
+    return size;
+  }
+
+  public void setSize(Integer size) {
+    this.size = size != null ? size : 50;
+  }
+
+  public Integer getPage() {
+    return page;
+  }
+
+  public void setPage(Integer page) {
+    this.page = page != null ? page : 1;
+  }
+}
