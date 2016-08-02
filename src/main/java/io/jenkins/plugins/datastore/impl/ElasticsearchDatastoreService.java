@@ -82,12 +82,10 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       final SearchResponse response = requestBuilder.execute().get();
       final long total = response.getHits().getTotalHits();
       final long pages = (total + size - 1) / size;
-      final Plugins result = new Plugins();
-      result.setPlugins(ElasticsearchTransformer.transformHits(response.getHits()));
-      result.setTotal(total);
-      result.setPage(page);
-      result.setPages(pages);
-      return result;
+      return new Plugins(
+        ElasticsearchTransformer.transformHits(response.getHits()),
+        page, pages, total
+      );
     } catch (Exception e) {
       logger.error("Problem executing, ES query", e);
       throw new DatastoreException("Problem executing ES query", e);

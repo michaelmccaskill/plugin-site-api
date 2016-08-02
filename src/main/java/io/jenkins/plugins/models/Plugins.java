@@ -20,6 +20,9 @@ public class Plugins {
   @JsonProperty("total")
   private long total;
 
+  @JsonProperty("size")
+  private int size;
+
   public Plugins() {
   }
 
@@ -28,6 +31,7 @@ public class Plugins {
     this.page = page;
     this.pages = pages;
     this.total = total;
+    this.size = plugins.size();
   }
 
   public List<Plugin> getPlugins() {
@@ -60,5 +64,13 @@ public class Plugins {
 
   public void setTotal(long total) {
     this.total = total;
+  }
+
+  public int getSize() {
+    return size;
+  }
+
+  public void setSize(int size) {
+    this.size = size;
   }
 }
