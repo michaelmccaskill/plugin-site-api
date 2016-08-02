@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/plugins")
@@ -36,6 +37,28 @@ public class PluginsEndpoint {
       return datastoreService.search(query, sortBy, categories, labels, authors, core, size, page);
     } catch (DatastoreException e) {
       logger.error("Problem getting plugins", e);
+      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Path("/downloaded")
+  @GET
+  public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("limit") int limit) {
+    try {
+      return datastoreService.search(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1);
+    } catch (DatastoreException e) {
+      logger.error("Problem getting most downloaded", e);
+      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Path("/updated")
+  @GET
+  public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("limit") int limit) {
+    try {
+      return datastoreService.search(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1);
+    } catch (DatastoreException e) {
+      logger.error("Problem getting recently updated", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }

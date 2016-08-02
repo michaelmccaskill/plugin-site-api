@@ -148,4 +148,20 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertEquals("Developers total doesn't match", developers.getTotal(), developers.getDevelopers().size());
   }
 
+  @Test
+  public void testGetMostDownloaded() {
+    final Plugins plugins = target("/plugins/downloaded").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+  }
+
+  @Test
+  public void testGetRecentlyUpdated() {
+    final Plugins plugins = target("/plugins/updated").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null'", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
+  }
+
 }
