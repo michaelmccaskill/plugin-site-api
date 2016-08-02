@@ -26,12 +26,12 @@ public class Plugins {
   public Plugins() {
   }
 
-  public Plugins(List<Plugin> plugins, int page, long pages, long total) {
+  public Plugins(List<Plugin> plugins, int page, long pages, long total, int limit) {
     this.plugins = plugins;
     this.page = page;
     this.pages = pages;
     this.total = total;
-    this.limit = plugins.size();
+    this.limit = limit;
   }
 
   public List<Plugin> getPlugins() {

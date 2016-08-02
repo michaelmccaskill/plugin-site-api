@@ -11,17 +11,17 @@ public class SearchOptions {
   private List<String> labels;
   private List<String> authors;
   private String core;
-  private Integer size;
+  private Integer limit;
   private Integer page;
 
-  public SearchOptions(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> authors, String core, Integer size, Integer page) {
+  public SearchOptions(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> authors, String core, Integer limit, Integer page) {
     setQuery(query);
     setSortBy(sortBy);
     setCategories(categories);
     setLabels(labels);
     setAuthors(authors);
     setCore(core);
-    setSize(size);
+    setLimit(limit);
     setPage(page);
   }
 
@@ -73,12 +73,12 @@ public class SearchOptions {
     this.core = core != null && !core.trim().isEmpty() ? core.trim() : null;
   }
 
-  public Integer getSize() {
-    return size;
+  public Integer getLimit() {
+    return limit;
   }
 
-  public void setSize(Integer size) {
-    this.size = size != null ? size : 50;
+  public void setLimit(Integer limit) {
+    this.limit = limit != null ? limit : 50;
   }
 
   public Integer getPage() {

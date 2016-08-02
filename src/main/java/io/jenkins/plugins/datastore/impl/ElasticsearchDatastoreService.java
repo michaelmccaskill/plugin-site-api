@@ -42,8 +42,8 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   public Plugins search(SearchOptions searchOptions) throws DatastoreException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
-        .setFrom((searchOptions.getPage() - 1) * searchOptions.getSize())
-        .setSize(searchOptions.getSize());
+        .setFrom((searchOptions.getPage() - 1) * searchOptions.getLimit())
+        .setSize(searchOptions.getLimit());
       final BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
       if (searchOptions.getQuery() != null) {
         queryBuilder
@@ -82,10 +82,10 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       }
       final SearchResponse response = requestBuilder.execute().get();
       final long total = response.getHits().getTotalHits();
-      final long pages = (total + searchOptions.getSize() - 1) / searchOptions.getSize();
+      final long pages = (total + searchOptions.getLimit() - 1) / searchOptions.getLimit();
       return new Plugins(
         ElasticsearchTransformer.transformHits(response.getHits()),
-        searchOptions.getPage(), pages, total
+        searchOptions.getPage(), pages, total, searchOptions.getLimit()
       );
     } catch (Exception e) {
       logger.error("Problem executing, ES query", e);
