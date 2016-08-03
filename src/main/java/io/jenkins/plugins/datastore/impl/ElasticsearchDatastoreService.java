@@ -103,7 +103,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
             requestBuilder.addSort(SortBuilders.fieldSort("title.raw").order(SortOrder.ASC));
             break;
           case UPDATED:
-            requestBuilder.addSort(SortBuilders.fieldSort("buildDate").order(SortOrder.DESC));
+            requestBuilder.addSort(SortBuilders.fieldSort("releaseTimestamp").order(SortOrder.DESC));
             break;
           case RELEVANCE: break;
         }
