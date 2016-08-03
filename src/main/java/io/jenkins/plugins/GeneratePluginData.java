@@ -23,9 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -91,12 +89,12 @@ public class GeneratePluginData {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       for (String key : plugins.keySet()) {
         final JSONObject plugin = plugins.getJSONObject(key);
-        final JSONArray categories = new JSONArray();
+        final Set<String> categories = new HashSet<>();
         final JSONArray labels = plugin.optJSONArray("labels");
         for (int i = 0; i < labels.length(); i++) {
           final String label = labels.getString(i);
           if (labelToCategoryMap.containsKey(label)) {
-            categories.put(labelToCategoryMap.get(label));
+            categories.add(labelToCategoryMap.get(label));
           }
         }
         plugin.put("categories", categories);
