@@ -99,6 +99,9 @@ public class ElasticsearchDatastoreService implements DatastoreService {
           case NAME:
             requestBuilder.addSort(SortBuilders.fieldSort("name.raw").order(SortOrder.ASC));
             break;
+          case TITLE:
+            requestBuilder.addSort(SortBuilders.fieldSort("title.raw").order(SortOrder.ASC));
+            break;
           case UPDATED:
             requestBuilder.addSort(SortBuilders.fieldSort("buildDate").order(SortOrder.DESC));
             break;

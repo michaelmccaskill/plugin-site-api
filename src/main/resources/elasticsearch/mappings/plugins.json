@@ -149,7 +149,13 @@
         }
       },
       "title" : {
-        "type" : "string"
+        "type" : "string",
+        "fields" : {
+          "raw" : {
+            "type" : "string",
+            "index" : "not_analyzed"
+          }
+        }
       },
       "url" : {
         "type" : "string",

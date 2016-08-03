@@ -5,6 +5,7 @@ public enum SortBy {
   INSTALLS,
   NAME,
   RELEVANCE,
+  TITLE,
   UPDATED;
 
   public String value() {

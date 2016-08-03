@@ -72,6 +72,14 @@ public class DatastoreServiceTest {
   }
 
   @Test
+  public void testSearchSortByTitle() {
+    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.NAME,Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    Assert.assertNotNull("Search for 'git' sort by title is null", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.TITLE not correct", plugins.getPlugins().get(0).getTitle().compareTo(plugins.getPlugins().get(1).getTitle()) < 0);
+  }
+
+  @Test
   public void testSearchSortByUpdated() {
     final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
     Assert.assertNotNull("Search for 'git' sort by updated is null", plugins);
