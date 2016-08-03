@@ -8,6 +8,7 @@ import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import io.jenkins.plugins.models.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.queryparser.xml.builders.FilteredQueryBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -53,17 +54,34 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
       }
-      if (!searchOptions.getCategories().isEmpty()) {
-        queryBuilder.must(QueryBuilders.termsQuery("categories", searchOptions.getCategories()));
-      }
-      if (!searchOptions.getLabels().isEmpty()) {
-        queryBuilder.must(QueryBuilders.termsQuery("labels", searchOptions.getLabels()));
-      }
-      if (!searchOptions.getAuthors().isEmpty()) {
-        queryBuilder.must(QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", searchOptions.getAuthors())));
-      }
-      if (searchOptions.getCore() != null) {
-        queryBuilder.must(QueryBuilders.termQuery("requiredCore", searchOptions.getCore()));
+      if (!searchOptions.getAuthors().isEmpty() || !searchOptions.getCategories().isEmpty()
+            || searchOptions.getCore() != null || !searchOptions.getLabels().isEmpty()) {
+        final BoolQueryBuilder filter = QueryBuilders.boolQuery();
+        if (!searchOptions.getCategories().isEmpty()) {
+          filter.must(
+            QueryBuilders.boolQuery().should(
+              QueryBuilders.termsQuery("categories", searchOptions.getCategories())
+            )
+          );
+        }
+        if (!searchOptions.getLabels().isEmpty()) {
+          filter.must(
+            QueryBuilders.boolQuery().should(
+              QueryBuilders.termsQuery("labels", searchOptions.getLabels())
+            )
+          );
+        }
+        if (!searchOptions.getAuthors().isEmpty()) {
+          filter.must(
+            QueryBuilders.boolQuery().should(
+              QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", searchOptions.getAuthors()))
+            )
+          );
+        }
+        if (searchOptions.getCore() != null) {
+          filter.must(QueryBuilders.termQuery("requiredCore", searchOptions.getCore()));
+        }
+        queryBuilder.filter(filter);
       }
       requestBuilder.setQuery(queryBuilder);
       if (searchOptions.getSortBy() != null) {

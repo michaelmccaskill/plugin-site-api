@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,9 +29,9 @@ public class PluginsEndpoint {
   public Plugins search(
       @QueryParam("q") String query,
       @DefaultValue("relevance") @QueryParam("sort") SortBy sortBy,
-      @QueryParam("categories") List<String> categories,
-      @QueryParam("labels") List<String> labels,
-      @QueryParam("authors") List<String> authors,
+      @DefaultValue("") @QueryParam("categories") String categories,
+      @DefaultValue("") @QueryParam("labels") String labels,
+      @DefaultValue("") @QueryParam("authors") String authors,
       @DefaultValue("") @QueryParam("core")String core,
       @DefaultValue("50") @QueryParam("limit") int limit,
       @DefaultValue("1") @QueryParam("page") int page) {

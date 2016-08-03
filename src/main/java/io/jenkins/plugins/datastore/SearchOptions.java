@@ -1,5 +1,6 @@
 package io.jenkins.plugins.datastore;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,6 +21,17 @@ public class SearchOptions {
     setCategories(categories);
     setLabels(labels);
     setAuthors(authors);
+    setCore(core);
+    setLimit(limit);
+    setPage(page);
+  }
+
+  public SearchOptions(String query, SortBy sortBy, String categories, String labels, String authors, String core, Integer limit, Integer page) {
+    setQuery(query);
+    setSortBy(sortBy);
+    setCategories(categories != null && !categories.trim().isEmpty() ? Arrays.asList(categories.split(",")) : Collections.emptyList());
+    setLabels(labels != null && !labels.trim().isEmpty() ? Arrays.asList(labels.split(",")) : Collections.emptyList());
+    setAuthors(authors != null && !authors.trim().isEmpty() ? Arrays.asList(authors.split(",")) : Collections.emptyList());
     setCore(core);
     setLimit(limit);
     setPage(page);
