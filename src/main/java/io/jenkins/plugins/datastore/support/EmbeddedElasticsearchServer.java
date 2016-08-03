@@ -16,11 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Copied & modified from:
@@ -75,8 +76,8 @@ public class EmbeddedElasticsearchServer {
         .addMapping("plugins", mappingContent)
         .get();
       logger.info(String.format("Index '%s' created", index));
-      final File dataFile = new File(cl.getResource("elasticsearch/data/plugins.json").getFile());
-      final String data = FileUtils.readFileToString(dataFile, "utf-8");
+      final File dataFile = new File(cl.getResource("elasticsearch/data/plugins.json.gzip").getFile());
+      final String data = readGzipFile(dataFile);
       final JSONObject json = new JSONObject(data);
       final BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
       json.keySet().stream().forEach((key) -> {
@@ -98,6 +99,15 @@ public class EmbeddedElasticsearchServer {
     } catch (Exception e) {
       logger.error("Problem creating and populating index", e);
       throw new RuntimeException("Problem creating and populating index", e);
+    }
+  }
+
+  private String readGzipFile(final File file) {
+    try(final BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), "utf-8"))) {
+      return reader.lines().collect(Collectors.joining());
+    } catch (Exception e) {
+      logger.error("Problem decompressing plugin data", e);
+      throw new RuntimeException("Problem decompressing plugin data", e);
     }
   }
 

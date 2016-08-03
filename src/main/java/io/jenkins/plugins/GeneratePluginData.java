@@ -16,8 +16,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +25,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Class that generates the final plugins.json file that is intended to be used for indexing
@@ -151,9 +153,9 @@ public class GeneratePluginData {
   }
 
   private void writePluginsToFile(JSONObject plugins) {
-    try {
-      final File data = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "elasticsearch", "data", "plugins.json").toFile();
-      FileUtils.writeStringToFile(data, plugins.toString(2), "utf-8");
+    final File data = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "elasticsearch", "data", "plugins.json.gzip").toFile();
+    try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), "utf-8"))) {
+      writer.write(plugins.toString(2));
     } catch (Exception e) {
       logger.error("Problem writing plugin data to file", e);
       throw new RuntimeException(e);
