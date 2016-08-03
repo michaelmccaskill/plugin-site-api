@@ -57,14 +57,21 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       if (!searchOptions.getAuthors().isEmpty() || !searchOptions.getCategories().isEmpty()
             || searchOptions.getCore() != null || !searchOptions.getLabels().isEmpty()) {
         final BoolQueryBuilder filter = QueryBuilders.boolQuery();
-        if (!searchOptions.getCategories().isEmpty()) {
+        if (!searchOptions.getCategories().isEmpty() && !searchOptions.getLabels().isEmpty()) {
+          filter.must(
+            QueryBuilders.boolQuery().should(
+              QueryBuilders.termsQuery("categories", searchOptions.getCategories())
+            ).should(
+              QueryBuilders.termsQuery("labels", searchOptions.getLabels())
+            )
+          );
+        } else if (!searchOptions.getCategories().isEmpty()) {
           filter.must(
             QueryBuilders.boolQuery().should(
               QueryBuilders.termsQuery("categories", searchOptions.getCategories())
             )
           );
-        }
-        if (!searchOptions.getLabels().isEmpty()) {
+        } else if (!searchOptions.getLabels().isEmpty()) {
           filter.must(
             QueryBuilders.boolQuery().should(
               QueryBuilders.termsQuery("labels", searchOptions.getLabels())
