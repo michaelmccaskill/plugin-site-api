@@ -4,11 +4,15 @@ import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.datastore.DatastoreException;
 import io.jenkins.plugins.datastore.DatastoreService;
 import io.jenkins.plugins.datastore.SearchOptions;
-import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
 import io.jenkins.plugins.models.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.queryparser.xml.builders.FilteredQueryBuilder;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -27,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -209,6 +214,40 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       return result;
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public String getWikiContent(Plugin plugin) throws DatastoreException {
+    if (plugin.getWiki().getUrl() != null && !plugin.getWiki().getUrl().isEmpty()) {
+      final CloseableHttpClient httpClient = HttpClients.createDefault();
+      try {
+        final HttpGet get = new HttpGet(plugin.getWiki().getUrl());
+        final CloseableHttpResponse response = httpClient.execute(get);
+        try {
+          final HttpEntity entity = response.getEntity();
+          final String html = EntityUtils.toString(entity);
+          EntityUtils.consume(entity);
+          return html;
+        } finally {
+          try {
+            response.close();
+          } catch (IOException e) {
+            logger.warn("Problem closing response", e);
+          }
+        }
+      } catch (Exception e) {
+        logger.error("Problem getting wiki content", e);
+        throw new DatastoreException("Problem getting wiki content", e);
+      } finally {
+        try {
+          httpClient.close();
+        } catch (IOException e) {
+          logger.warn("Problem closing HttpClient", e);
+        }
+      }
+    } else {
+      return null;
     }
   }
 }

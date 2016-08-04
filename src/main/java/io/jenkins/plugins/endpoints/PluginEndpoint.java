@@ -25,6 +25,8 @@ public class PluginEndpoint {
     try {
       final Plugin plugin = datastoreService.getPlugin(name);
       if (plugin != null) {
+        final String content = datastoreService.getWikiContent(plugin);
+        plugin.getWiki().setContent(content);
         return plugin;
       } else {
         throw new WebApplicationException(Response.Status.NOT_FOUND);

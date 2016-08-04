@@ -87,7 +87,7 @@ public class Plugin {
   private String version;
 
   @JsonProperty("wiki")
-  private String wiki;
+  private Wiki wiki;
 
   public Plugin() {
   }
@@ -95,7 +95,7 @@ public class Plugin {
   public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Developer> developers,
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, String scm, String sha1,
-                Stats stats, String title, String url, String version, String wiki) {
+                Stats stats, String title, String url, String version, Wiki wiki) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
@@ -261,11 +261,11 @@ public class Plugin {
     this.version = version;
   }
 
-  public String getWiki() {
+  public Wiki getWiki() {
     return wiki;
   }
 
-  public void setWiki(String wiki) {
+  public void setWiki(Wiki wiki) {
     this.wiki = wiki;
   }
 }

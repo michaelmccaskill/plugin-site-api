@@ -107,7 +107,7 @@ public class GeneratePluginData {
         plugin.setTitle(pluginJson.optString("title", null));
         plugin.setUrl(pluginJson.optString("url", null));
         plugin.setVersion(pluginJson.optString("version", null));
-        plugin.setWiki(pluginJson.optString("wiki", null));
+        plugin.setWiki(new Wiki(null, pluginJson.optString("wiki", null)));
         final Set<String> categories = new HashSet<>();
         final List<String> labels = new ArrayList<>();
         final JSONArray labelsJson = pluginJson.optJSONArray("labels");
