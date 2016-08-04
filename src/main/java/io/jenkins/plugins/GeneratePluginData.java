@@ -1,5 +1,7 @@
 package io.jenkins.plugins;
 
+import io.jenkins.plugins.commons.JsonObjectMapper;
+import io.jenkins.plugins.models.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -17,15 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -38,14 +39,17 @@ public class GeneratePluginData {
 
   private static final DateTimeFormatter BUILD_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
+  // java.time DateTimeFormatter.ISO_LOCAL_DATE_TIME uses nano-of-second where we're using milliseconds
+  private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SS'Z'");
+
   public static void main(String[] args) {
     final GeneratePluginData generatePluginData = new GeneratePluginData();
     generatePluginData.generate();
   }
 
   public void generate() {
-    final JSONObject plugins = getPlugins();
-    getPluginStatistics(plugins);
+    final JSONObject pluginsJson = getPlugins();
+    final List<Plugin> plugins = generatePlugins(pluginsJson);
     writePluginsToFile(plugins);
   }
 
@@ -82,30 +86,84 @@ public class GeneratePluginData {
     }
   }
 
-  private void getPluginStatistics(JSONObject plugins) {
+  private List<Plugin> generatePlugins(JSONObject pluginsJson) {
     try {
       final Path tempDir = Files.createTempDirectory("infra-statistics");
       logger.info("Cloning jenkins-infra/infra-statistics");
       Git.cloneRepository().setURI("git://github.com/jenkins-infra/infra-statistics.git").setBranch("gh-pages").setDirectory(tempDir.toFile()).call();
       logger.info("Finished cloning jenkins-infra/infra-statistics");
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
-      for (String key : plugins.keySet()) {
-        final JSONObject plugin = plugins.getJSONObject(key);
+      final List<Plugin> plugins = new ArrayList<>();
+      for (String key : pluginsJson.keySet()) {
+        final JSONObject pluginJson = pluginsJson.getJSONObject(key);
+        final Plugin plugin = new Plugin();
+        plugin.setExcerpt(pluginJson.optString("excerpt", null));
+        plugin.setGav(pluginJson.optString("gav", null));
+        plugin.setName(pluginJson.getString("name"));
+        plugin.setPreviousVersion(pluginJson.optString("previousVersion", null));
+        plugin.setRequiredCore(pluginJson.optString("requiredCore"));
+        plugin.setScm(pluginJson.optString("scm", null));
+        plugin.setSha1(pluginJson.optString("sha1", null));
+        plugin.setTitle(pluginJson.optString("title", null));
+        plugin.setUrl(pluginJson.optString("url", null));
+        plugin.setVersion(pluginJson.optString("version", null));
+        plugin.setWiki(pluginJson.optString("wiki", null));
         final Set<String> categories = new HashSet<>();
-        final JSONArray labels = plugin.optJSONArray("labels");
-        for (int i = 0; i < labels.length(); i++) {
-          final String label = labels.getString(i);
-          if (labelToCategoryMap.containsKey(label)) {
-            categories.add(labelToCategoryMap.get(label));
+        final List<String> labels = new ArrayList<>();
+        final JSONArray labelsJson = pluginJson.optJSONArray("labels");
+        if (labelsJson != null) {
+          for (int i = 0; i < labelsJson.length(); i++) {
+            final String label = labelsJson.getString(i);
+            if (labelToCategoryMap.containsKey(label)) {
+              categories.add(labelToCategoryMap.get(label));
+            }
+            labels.add(label);
           }
         }
-        plugin.put("categories", categories);
-        if (plugin.optString("buildDate", null) != null) {
-          final LocalDate buildDate = LocalDate.parse(plugin.getString("buildDate"), BUILD_DATE_FORMATTER);
-          plugin.put("buildDate", buildDate);
+        plugin.setLabels(labels);
+        plugin.setCategories(new ArrayList<>(categories));
+        final List<Dependency> dependencies = new ArrayList<>();
+        final JSONArray dependenciesJson = pluginJson.getJSONArray("dependencies");
+        if (dependenciesJson != null) {
+          for (int i = 0; i < dependenciesJson.length(); i++) {
+            final JSONObject json = dependenciesJson.getJSONObject(i);
+            final Dependency dependency = new Dependency(
+              json.optString("name", null),
+              json.optBoolean("optional", false),
+              json.optString("version", null)
+            );
+            dependencies.add(dependency);
+          }
+        }
+        plugin.setDependencies(dependencies);
+        final List<Developer> developers = new ArrayList<>();
+        final JSONArray developersJson = pluginJson.getJSONArray("developers");
+        if (developersJson != null) {
+          for (int i = 0; i < developersJson.length(); i++) {
+            final JSONObject json = developersJson.getJSONObject(i);
+            final Developer developer = new Developer(
+              json.optString("developerId", null),
+              json.optString("name", null),
+              json.optString("email", null)
+            );
+            developers.add(developer);
+          }
+        }
+        plugin.setDevelopers(developers);
+        if (pluginJson.optString("buildDate", null) != null) {
+          final LocalDate buildDate = LocalDate.parse(pluginJson.getString("buildDate"), BUILD_DATE_FORMATTER);
+          plugin.setBuildDate(buildDate);
+        }
+        if (pluginJson.optString("previousTimestamp", null) != null) {
+          final LocalDateTime previousTimestamp = LocalDateTime.parse(pluginJson.getString("previousTimestamp"), TIMESTAMP_FORMATTER);
+          plugin.setPreviousTimestamp(previousTimestamp);
+        }
+        if (pluginJson.optString("releaseTimestamp", null) != null) {
+          final LocalDateTime releaseTimestamp = LocalDateTime.parse(pluginJson.getString("releaseTimestamp"), TIMESTAMP_FORMATTER);
+          plugin.setReleaseTimestamp(releaseTimestamp);
         }
         final Path file = tempDir.resolve(String.format("plugin-installation-trend%c%s.stats.json", File.separatorChar, key));
-        final JSONObject stats = new JSONObject();
+        final Stats stats = new Stats();
         if (Files.exists(file)) {
           logger.info(String.format("Processing statistics for %s", key));
           final JSONObject json = new JSONObject(Files.lines(file).collect(Collectors.joining("\n")));
@@ -113,49 +171,47 @@ public class GeneratePluginData {
           final JSONObject installationsPercentage = json.getJSONObject("installationsPercentage");
           final JSONObject installationsPerVersion = json.getJSONObject("installationsPerVersion");
           final JSONObject installationsPercentagePerVersion = json.getJSONObject("installationsPercentagePerVersion");
-          stats.put("installations", new JSONArray(installations.keySet().stream().map((timestamp) -> {
-            final JSONObject installation = new JSONObject();
-            installation.put("timestamp", Long.valueOf(timestamp));
-            installation.put("total", installations.getInt(timestamp));
-            return installation;
-          }).collect(Collectors.toSet())));
-          stats.put("installationsPercentage", new JSONArray(installationsPercentage.keySet().stream().map((timestamp) -> {
-            final JSONObject installation = new JSONObject();
-            installation.put("timestamp", Long.valueOf(timestamp));
-            installation.put("percentage", installationsPercentage.getDouble(timestamp));
-            return installation;
-          }).collect(Collectors.toSet())));
-          stats.put("installationsPerVersion", new JSONArray(installationsPerVersion.keySet().stream().map((version) -> {
-            final JSONObject installation = new JSONObject();
-            installation.put("version", version);
-            installation.put("total", installationsPerVersion.getInt(version));
-            return installation;
-          }).collect(Collectors.toSet())));
-          stats.put("installationsPercentagePerVersion", new JSONArray(installationsPercentagePerVersion.keySet().stream().map((version) -> {
-            final JSONObject installation = new JSONObject();
-            installation.put("version", version);
-            installation.put("total", installationsPercentagePerVersion.getDouble(version));
-            return installation;
-          }).collect(Collectors.toSet())));
-          final String lifetimeKey = installations.keySet().stream().max(String::compareTo).orElse(null);
-          final Long lifetime = lifetimeKey != null ? installations.getLong(lifetimeKey) : 0L;
-          stats.put("lifetime", lifetime);
-        } else {
-          logger.warn(String.format("No statistics for %s found", key));
-          stats.put("lifetime", 0L);
+          stats.setInstallations(installations.keySet().stream().map((timestamp) -> {
+            return new Installation(
+              Long.valueOf(timestamp),
+              installations.getInt(timestamp)
+            );
+          }).collect(Collectors.toList()));
+          stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) -> {
+            return new InstallationPercentage(
+              Long.valueOf(timestamp),
+              installationsPercentage.getDouble(timestamp)
+            );
+          }).collect(Collectors.toList()));
+          stats.setInstallationsPercentagePerVersion(installationsPerVersion.keySet().stream().map((version) -> {
+            return new InstallationPercentageVersion(
+              version,
+              installationsPerVersion.getInt(version)
+            );
+          }).collect(Collectors.toList()));
+          stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map((version) -> {
+            return new InstallationPercentageVersion(
+              version,
+              installationsPercentagePerVersion.getDouble(version)
+            );
+          }).collect(Collectors.toList()));
+          final String lifetime = installations.keySet().stream().max(String::compareTo).orElse(null);
+          stats.setLifetime(lifetime != null ? installations.getInt(lifetime) : 0);
         }
-        plugin.put("stats", stats);
+        plugin.setStats(stats);
+        plugins.add(plugin);
       }
+      return plugins;
     } catch (Exception e) {
-      logger.error("Problem processing statistics", e);
+      logger.error("Problem generating plugins", e);
       throw new RuntimeException(e);
     }
   }
 
-  private void writePluginsToFile(JSONObject plugins) {
+  private void writePluginsToFile(List<Plugin> plugins) {
     final File data = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "elasticsearch", "data", "plugins.json.gzip").toFile();
     try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), "utf-8"))) {
-      writer.write(plugins.toString(2));
+      JsonObjectMapper.getObjectMapper().writeValue(writer, plugins);
     } catch (Exception e) {
       logger.error("Problem writing plugin data to file", e);
       throw new RuntimeException(e);
