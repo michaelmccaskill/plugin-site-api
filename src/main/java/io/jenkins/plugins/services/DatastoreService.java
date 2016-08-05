@@ -14,6 +14,4 @@ public interface DatastoreService {
 
   Labels getLabels() throws ServiceException;
 
-  String getWikiContent(Plugin plugin) throws ServiceException;
-
 }

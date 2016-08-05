@@ -3,6 +3,7 @@ package io.jenkins.plugins.endpoints;
 import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.models.Plugin;
+import io.jenkins.plugins.services.WikiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +21,16 @@ public class PluginEndpoint {
   @Inject
   private DatastoreService datastoreService;
 
+  @Inject
+  private WikiService wikiService;
+
   @GET
   public Plugin getPlugin(@PathParam("name") String name) {
     try {
       final Plugin plugin = datastoreService.getPlugin(name);
       if (plugin != null) {
-        final String content = datastoreService.getWikiContent(plugin);
+        final String rawContent = wikiService.getWikiContent(plugin);
+        final String content = wikiService.cleanWikiContent(rawContent);
         plugin.getWiki().setContent(content);
         return plugin;
       } else {
