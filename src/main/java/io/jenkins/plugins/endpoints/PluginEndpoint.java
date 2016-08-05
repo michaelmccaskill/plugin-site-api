@@ -29,7 +29,7 @@ public class PluginEndpoint {
     try {
       final Plugin plugin = datastoreService.getPlugin(name);
       if (plugin != null) {
-        final String rawContent = wikiService.getWikiContent(plugin);
+        final String rawContent = wikiService.getWikiContent(plugin.getWiki() != null ? plugin.getWiki().getUrl() : null);
         final String content = wikiService.cleanWikiContent(rawContent);
         plugin.getWiki().setContent(content);
         return plugin;

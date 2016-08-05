@@ -1,6 +1,5 @@
 package io.jenkins.plugins.services.impl;
 
-import io.jenkins.plugins.models.Plugin;
 import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.WikiService;
 import org.apache.http.HttpEntity;
@@ -24,11 +23,11 @@ public class HttpClientWikiService implements WikiService {
   private Logger logger = LoggerFactory.getLogger(HttpClientWikiService.class);
 
   @Override
-  public String getWikiContent(Plugin plugin) throws ServiceException {
-    if (plugin.getWiki().getUrl() != null && !plugin.getWiki().getUrl().isEmpty()) {
+  public String getWikiContent(String url) throws ServiceException {
+    if (url != null && !url.trim().isEmpty()) {
       final CloseableHttpClient httpClient = HttpClients.createDefault();
       try {
-        return doGetWikiContent(httpClient, plugin.getWiki().getUrl(), true);
+        return doGetWikiContent(httpClient, url, true);
       } catch (Exception e) {
         logger.error("Problem getting wiki content", e);
         throw new ServiceException("Problem getting wiki content", e);
