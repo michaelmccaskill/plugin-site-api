@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class DatastoreServiceTest {
+public class DatastoreServiceIntegrationTest {
 
   private static ServiceLocator locator;
   private static DatastoreService datastoreService;
