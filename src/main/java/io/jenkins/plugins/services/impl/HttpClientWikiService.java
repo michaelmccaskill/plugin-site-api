@@ -88,9 +88,11 @@ public class HttpClientWikiService implements WikiService {
       logger.warn("wiki-content not found in content");
       return null;
     }
-    elements.first().getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href"));
-    elements.first().getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src"));
-    return elements.first().html();
+    final Element wikiContent = elements.first();
+    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href"));
+    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src"));
+    wikiContent.getElementsByClass("table-wrap").remove();
+    return wikiContent.html();
   }
 
   private void replaceAttribute(Element element, String attributeName) {
