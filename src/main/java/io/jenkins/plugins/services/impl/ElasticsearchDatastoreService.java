@@ -1,7 +1,7 @@
 package io.jenkins.plugins.services.impl;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
-import io.jenkins.plugins.services.DatastoreException;
+import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.services.SearchOptions;
 import io.jenkins.plugins.datastore.ElasticsearchTransformer;
@@ -45,7 +45,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   private Client esClient;
 
   @Override
-  public Plugins search(SearchOptions searchOptions) throws DatastoreException {
+  public Plugins search(SearchOptions searchOptions) throws ServiceException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .setFrom((searchOptions.getPage() - 1) * searchOptions.getLimit())
@@ -122,23 +122,23 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       );
     } catch (Exception e) {
       logger.error("Problem executing, ES query", e);
-      throw new DatastoreException("Problem executing ES query", e);
+      throw new ServiceException("Problem executing ES query", e);
     }
   }
 
   @Override
-  public Plugin getPlugin(String name) throws DatastoreException {
+  public Plugin getPlugin(String name) throws ServiceException {
     try {
       final GetResponse getResponse = esClient.prepareGet("plugins", "plugins", name).execute().get();
       return getResponse.isExists() ? ElasticsearchTransformer.transformGet(getResponse, Plugin.class) : null;
     } catch (Exception e) {
         logger.error("Problem executing ES query", e);
-        throw new DatastoreException("Problem executing ES query", e);
+        throw new ServiceException("Problem executing ES query", e);
     }
   }
 
   @Override
-  public Categories getCategories() throws DatastoreException {
+  public Categories getCategories() throws ServiceException {
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("categories.json").getFile());
@@ -151,12 +151,12 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       return new Categories(categories);
     } catch (Exception e) {
       logger.error("Problem getting categories", e);
-      throw new DatastoreException("Problem getting categories", e);
+      throw new ServiceException("Problem getting categories", e);
     }
   }
 
   @Override
-  public Developers getDevelopers() throws DatastoreException {
+  public Developers getDevelopers() throws ServiceException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .addAggregation(AggregationBuilders.nested("developers").path("developers")
@@ -173,12 +173,12 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       return new Developers(developers);
     } catch (Exception e) {
       logger.error("Problem getting developers", e);
-      throw new DatastoreException("Problem getting developers", e);
+      throw new ServiceException("Problem getting developers", e);
     }
   }
 
   @Override
-  public Labels getLabels() throws DatastoreException {
+  public Labels getLabels() throws ServiceException {
     try {
       final Map<String, String> labelTitleMap = buildLabelTitleMap();
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
@@ -197,7 +197,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       return new Labels(labels);
     } catch (Exception e) {
       logger.error("Problem getting labels", e);
-      throw new DatastoreException("Problem getting labels", e);
+      throw new ServiceException("Problem getting labels", e);
     }
   }
 
@@ -218,7 +218,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public String getWikiContent(Plugin plugin) throws DatastoreException {
+  public String getWikiContent(Plugin plugin) throws ServiceException {
     if (plugin.getWiki().getUrl() != null && !plugin.getWiki().getUrl().isEmpty()) {
       final CloseableHttpClient httpClient = HttpClients.createDefault();
       try {
@@ -238,7 +238,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         }
       } catch (Exception e) {
         logger.error("Problem getting wiki content", e);
-        throw new DatastoreException("Problem getting wiki content", e);
+        throw new ServiceException("Problem getting wiki content", e);
       } finally {
         try {
           httpClient.close();

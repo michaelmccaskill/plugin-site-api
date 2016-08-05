@@ -1,6 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.services.DatastoreException;
+import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.services.SearchOptions;
 import io.jenkins.plugins.services.SortBy;
@@ -35,7 +35,7 @@ public class PluginsEndpoint {
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
       return datastoreService.search(new SearchOptions(query, sortBy, categories, labels, authors, core, limit, page));
-    } catch (DatastoreException e) {
+    } catch (ServiceException e) {
       logger.error("Problem getting plugins", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
@@ -46,7 +46,7 @@ public class PluginsEndpoint {
   public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
       return datastoreService.search(new SearchOptions(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
-    } catch (DatastoreException e) {
+    } catch (ServiceException e) {
       logger.error("Problem getting most downloaded", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
@@ -57,7 +57,7 @@ public class PluginsEndpoint {
   public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
       return datastoreService.search(new SearchOptions(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
-    } catch (DatastoreException e) {
+    } catch (ServiceException e) {
       logger.error("Problem getting recently updated", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }

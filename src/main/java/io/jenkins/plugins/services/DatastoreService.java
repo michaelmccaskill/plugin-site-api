@@ -4,16 +4,16 @@ import io.jenkins.plugins.models.*;
 
 public interface DatastoreService {
 
-  Plugins search(SearchOptions searchOptions) throws DatastoreException;
+  Plugins search(SearchOptions searchOptions) throws ServiceException;
 
-  Plugin getPlugin(String name) throws DatastoreException;
+  Plugin getPlugin(String name) throws ServiceException;
 
-  Categories getCategories() throws DatastoreException;
+  Categories getCategories() throws ServiceException;
 
-  Developers getDevelopers() throws DatastoreException;
+  Developers getDevelopers() throws ServiceException;
 
-  Labels getLabels() throws DatastoreException;
+  Labels getLabels() throws ServiceException;
 
-  String getWikiContent(Plugin plugin) throws DatastoreException;
+  String getWikiContent(Plugin plugin) throws ServiceException;
 
 }

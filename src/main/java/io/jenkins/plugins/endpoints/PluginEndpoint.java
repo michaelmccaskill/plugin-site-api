@@ -1,6 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.services.DatastoreException;
+import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.models.Plugin;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class PluginEndpoint {
       } else {
         throw new WebApplicationException(Response.Status.NOT_FOUND);
       }
-    } catch (DatastoreException e) {
+    } catch (ServiceException e) {
       logger.error("Problem getting plugin " + name, e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
