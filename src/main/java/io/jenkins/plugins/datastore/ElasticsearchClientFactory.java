@@ -1,4 +1,4 @@
-package io.jenkins.plugins.datastore.support;
+package io.jenkins.plugins.datastore;
 
 import org.elasticsearch.client.Client;
 import org.glassfish.hk2.api.Factory;

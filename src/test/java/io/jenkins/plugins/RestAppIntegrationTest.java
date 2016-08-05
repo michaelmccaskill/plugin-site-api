@@ -1,6 +1,5 @@
 package io.jenkins.plugins;
 
-import io.jenkins.plugins.datastore.SortBy;
 import io.jenkins.plugins.models.*;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.jetty.JettyTestContainerFactory;
@@ -10,8 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.ws.rs.core.Application;
-import java.util.Arrays;
-import java.util.Collections;
 
 public class RestAppIntegrationTest extends JerseyTest {
 

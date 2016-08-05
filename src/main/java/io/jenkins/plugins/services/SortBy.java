@@ -1,4 +1,4 @@
-package io.jenkins.plugins.datastore;
+package io.jenkins.plugins.services;
 
 public enum SortBy {
 

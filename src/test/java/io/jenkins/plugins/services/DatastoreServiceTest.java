@@ -1,4 +1,4 @@
-package io.jenkins.plugins.datastore;
+package io.jenkins.plugins.services;
 
 import io.jenkins.plugins.models.*;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -20,7 +20,9 @@ public class DatastoreServiceTest {
   // all our operations are read-only
   @BeforeClass
   public static void setUp() throws Exception {
-    locator  = ServiceLocatorUtilities.bind(new Binder());
+    locator  = ServiceLocatorUtilities.bind(
+      new io.jenkins.plugins.datastore.Binder(),
+      new io.jenkins.plugins.services.Binder());
     datastoreService = locator.getService(DatastoreService.class);
   }
 

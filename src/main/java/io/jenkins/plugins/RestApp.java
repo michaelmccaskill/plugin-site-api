@@ -1,6 +1,6 @@
 package io.jenkins.plugins;
 
-import io.jenkins.plugins.datastore.support.EmbeddedElasticsearchServer;
+import io.jenkins.plugins.datastore.EmbeddedElasticsearchServer;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
@@ -14,6 +14,8 @@ public class RestApp extends ResourceConfig {
   public RestApp() {
 
     register(new io.jenkins.plugins.datastore.Binder());
+
+    register(new io.jenkins.plugins.services.Binder());
 
     register(new ContainerLifecycleListener() {
       @Override

@@ -1,10 +1,10 @@
-package io.jenkins.plugins.datastore.impl;
+package io.jenkins.plugins.services.impl;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
-import io.jenkins.plugins.datastore.DatastoreException;
-import io.jenkins.plugins.datastore.DatastoreService;
-import io.jenkins.plugins.datastore.SearchOptions;
-import io.jenkins.plugins.datastore.support.ElasticsearchTransformer;
+import io.jenkins.plugins.services.DatastoreException;
+import io.jenkins.plugins.services.DatastoreService;
+import io.jenkins.plugins.services.SearchOptions;
+import io.jenkins.plugins.datastore.ElasticsearchTransformer;
 import io.jenkins.plugins.models.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;

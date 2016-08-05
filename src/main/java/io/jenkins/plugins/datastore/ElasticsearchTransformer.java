@@ -1,4 +1,4 @@
-package io.jenkins.plugins.datastore.support;
+package io.jenkins.plugins.datastore;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.Plugin;
