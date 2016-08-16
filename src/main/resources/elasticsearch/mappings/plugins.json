@@ -169,8 +169,12 @@
         "type" : "nested",
           "properties" : {
             "url": {
+              "type" : "string",
+              "index" : "not_analyzed"
+            },
+            "content" : {
               "type": "string",
-              "index": "not_analyzed"
+              "index" : "no"
             }
           }
         }

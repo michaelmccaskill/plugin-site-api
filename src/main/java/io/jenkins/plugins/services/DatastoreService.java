@@ -14,4 +14,6 @@ public interface DatastoreService {
 
   Labels getLabels() throws ServiceException;
 
+  void saveContent(String name, String content) throws ServiceException;
+
 }

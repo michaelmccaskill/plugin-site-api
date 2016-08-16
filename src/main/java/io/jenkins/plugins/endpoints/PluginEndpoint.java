@@ -29,9 +29,14 @@ public class PluginEndpoint {
     try {
       final Plugin plugin = datastoreService.getPlugin(name);
       if (plugin != null) {
-        final String rawContent = wikiService.getWikiContent(plugin.getWiki() != null ? plugin.getWiki().getUrl() : null);
-        final String content = wikiService.cleanWikiContent(rawContent);
-        plugin.getWiki().setContent(content);
+        if (plugin.getWiki() != null &&
+          (plugin.getWiki().getContent() == null || plugin.getWiki().getContent().isEmpty()) &&
+          (plugin.getWiki().getUrl() != null && !plugin.getWiki().getUrl().isEmpty())) {
+          final String rawContent = wikiService.getWikiContent(plugin.getWiki().getUrl());
+          final String content = wikiService.cleanWikiContent(rawContent);
+          datastoreService.saveContent(name, content);
+          plugin.getWiki().setContent(content);
+        }
         return plugin;
       } else {
         throw new WebApplicationException(Response.Status.NOT_FOUND);

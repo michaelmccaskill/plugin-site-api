@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Wiki {
 
   @JsonProperty("content")
-  @JsonIgnoreProperties(allowSetters = false)
   private String content;
 
   @JsonProperty("url")
