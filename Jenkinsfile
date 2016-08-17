@@ -12,4 +12,7 @@ node {
     step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
   }
 
+  stage 'Docker'
+  docker.build('jenkinsciinfra/plugin-site-api')
+
 }
