@@ -1,7 +1,7 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.models.Categories;
+import io.jenkins.plugins.services.DatastoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

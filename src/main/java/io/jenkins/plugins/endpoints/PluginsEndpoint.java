@@ -1,10 +1,10 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.services.ServiceException;
+import io.jenkins.plugins.models.Plugins;
 import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.services.SearchOptions;
+import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.SortBy;
-import io.jenkins.plugins.models.Plugins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
