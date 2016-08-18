@@ -154,12 +154,12 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testGetMostDownloaded() {
-    final Plugins plugins = target("/plugins/downloaded").request().get(Plugins.class);
-    Assert.assertNotNull("Most downloaded null", plugins);
+  public void testGetMostInstalled() {
+    final Plugins plugins = target("/plugins/installed").request().get(Plugins.class);
+    Assert.assertNotNull("Most installed null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    Assert.assertTrue("Most downloaded order not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
-    Assert.assertEquals("Most downloaded limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
+    Assert.assertTrue("Most installed order not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+    Assert.assertEquals("Most installed limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
   }
 
   @Test
