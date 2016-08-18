@@ -43,7 +43,7 @@ public class PluginsEndpoint {
 
   @Path("/installed")
   @GET
-  public Plugins getMostDownloaded(@DefaultValue("10") @QueryParam("limit") int limit) {
+  public Plugins getMostInstalled(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
       return datastoreService.search(new SearchOptions(null, SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
     } catch (ServiceException e) {
