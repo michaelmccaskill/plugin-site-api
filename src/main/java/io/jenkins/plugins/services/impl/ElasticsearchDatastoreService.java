@@ -10,10 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -213,21 +210,4 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     }
   }
 
-  @Override
-  public void saveContent(String name, String content) throws ServiceException {
-    try {
-      final XContentBuilder jsonBuilder = XContentFactory.jsonBuilder();
-      jsonBuilder.startObject()
-        .startObject("wiki")
-          .field("content", content)
-        .endObject()
-      .endObject();
-      final UpdateRequest updateRequest = esClient.prepareUpdate("plugins", "plugins", name)
-        .setDoc(jsonBuilder).request();
-      esClient.update(updateRequest).get();
-    } catch (Exception e) {
-      logger.error("Problem saving content", e);
-      throw new ServiceException("Problem saving content", e);
-    }
-  }
 }

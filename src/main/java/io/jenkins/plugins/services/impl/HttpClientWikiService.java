@@ -1,5 +1,8 @@
 package io.jenkins.plugins.services.impl;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.WikiService;
 import org.apache.http.HttpEntity;
@@ -16,30 +19,58 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class HttpClientWikiService implements WikiService {
 
   private Logger logger = LoggerFactory.getLogger(HttpClientWikiService.class);
 
+  private LoadingCache<String, String> wikiContentCache;
+
+  @PostConstruct
+  public void postConstruct() {
+    wikiContentCache = CacheBuilder.newBuilder()
+      .expireAfterWrite(6, TimeUnit.HOURS)
+      .maximumSize(1000)
+      .build(new CacheLoader<String, String>() {
+        @Override
+        public String load(String url) throws Exception {
+          final String rawContent = startGetWikiContent(url);
+          return cleanWikiContent(rawContent);
+        }
+      });
+  }
+
   @Override
   public String getWikiContent(String url) throws ServiceException {
     if (url != null && !url.trim().isEmpty()) {
-      final CloseableHttpClient httpClient = HttpClients.createDefault();
       try {
-        return doGetWikiContent(httpClient, url, true);
-      } catch (Exception e) {
+        return wikiContentCache.get(url);
+      } catch (ExecutionException e) {
         logger.error("Problem getting wiki content", e);
         throw new ServiceException("Problem getting wiki content", e);
-      } finally {
-        try {
-          httpClient.close();
-        } catch (IOException e) {
-          logger.warn("Problem closing HttpClient", e);
-        }
       }
     } else {
       return null;
+    }
+  }
+
+  private String startGetWikiContent(String url) throws ServiceException {
+    final CloseableHttpClient httpClient = HttpClients.createDefault();
+    try {
+      return doGetWikiContent(httpClient, url, true);
+    } catch (Exception e) {
+      logger.error("Problem getting wiki content", e);
+      throw new ServiceException("Problem getting wiki content", e);
+    } finally {
+      try {
+        httpClient.close();
+      } catch (IOException e) {
+        logger.warn("Problem closing HttpClient", e);
+      }
     }
   }
 

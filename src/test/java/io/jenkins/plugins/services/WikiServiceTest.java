@@ -11,11 +11,12 @@ import java.io.IOException;
 
 public class WikiServiceTest {
 
-  private WikiService wikiService;
+  private HttpClientWikiService wikiService;
 
   @Before
   public void setUp() {
     wikiService = new HttpClientWikiService();
+    wikiService.postConstruct();
   }
 
   @Test
