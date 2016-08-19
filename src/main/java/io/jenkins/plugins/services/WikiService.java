@@ -4,6 +4,6 @@ public interface WikiService {
 
   String getWikiContent(String url) throws ServiceException;
 
-  String cleanWikiContent(String content) throws ServiceException;
+  String cleanWikiContent(String url, String content) throws ServiceException;
 
 }

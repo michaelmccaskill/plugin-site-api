@@ -2,6 +2,9 @@ package io.jenkins.plugins.services;
 
 import io.jenkins.plugins.services.impl.HttpClientWikiService;
 import org.apache.commons.io.FileUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,13 +32,21 @@ public class WikiServiceTest {
 
   @Test
   public void testCleanWikiContent() throws IOException {
+    final String url = "https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin";
     final File file = new File("src/test/resources/wiki_content.html");
     final String content = FileUtils.readFileToString(file, "utf-8");
-    final String cleanContent = wikiService.cleanWikiContent(content);
+    final String cleanContent = wikiService.cleanWikiContent(url, content);
     Assert.assertNotNull("Wiki content is null", cleanContent);
-    Assert.assertFalse("Wiki content not clean - href references to root", cleanContent.matches("href=\"/"));
-    Assert.assertFalse("Wiki content not clean - src references to root", cleanContent.matches("src=\"/"));
-    Assert.assertFalse("Wiki content not clean - references to table-wrap", cleanContent.matches("class=\"table-wrap\""));
+    final Document html = Jsoup.parse(content);
+    html.getElementsByAttribute("href").forEach((element) -> {
+      final String value = element.attr("href");
+      Assert.assertFalse("Wiki content not clean - href references to root or hash", value.startsWith("/") && value.startsWith("#"));
+    });
+    html.getElementsByAttribute("href").forEach((element) -> {
+      final String value = element.attr("src");
+      Assert.assertFalse("Wiki content not clean - src references to root", value.startsWith("/"));
+    });
+    Assert.assertTrue("Wiki content not clean - references to table-wrap", html.getElementsByAttributeValue("class", "tabke-wrap").size() == 0);
   }
 
 }

@@ -39,7 +39,7 @@ public class HttpClientWikiService implements WikiService {
         @Override
         public String load(String url) throws Exception {
           final String rawContent = startGetWikiContent(url);
-          return cleanWikiContent(rawContent);
+          return cleanWikiContent(url, rawContent);
         }
       });
   }
@@ -107,7 +107,7 @@ public class HttpClientWikiService implements WikiService {
   }
 
   @Override
-  public String cleanWikiContent(String content) throws ServiceException {
+  public String cleanWikiContent(String url, String content) throws ServiceException {
     if (content == null || content.trim().isEmpty()) {
       logger.warn("Can't clean null content");
       return null;
@@ -119,16 +119,18 @@ public class HttpClientWikiService implements WikiService {
       return null;
     }
     final Element wikiContent = elements.first();
-    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href"));
-    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src"));
+    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href", url));
+    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src", url));
     wikiContent.getElementsByClass("table-wrap").remove();
     return wikiContent.html();
   }
 
-  private void replaceAttribute(Element element, String attributeName) {
+  private void replaceAttribute(Element element, String attributeName, String url) {
     final String attribute = element.attr(attributeName);
     if (attribute.startsWith("/")) {
       element.attr(attributeName, "https://wiki.jenkins-ci.org" + attribute);
+    } else if (attribute.startsWith("#")) {
+      element.attr(attributeName, url + "/" + attribute);
     }
   }
 
