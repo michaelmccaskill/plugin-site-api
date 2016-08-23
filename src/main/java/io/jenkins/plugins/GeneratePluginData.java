@@ -171,32 +171,36 @@ public class GeneratePluginData {
           final JSONObject installationsPercentage = json.getJSONObject("installationsPercentage");
           final JSONObject installationsPerVersion = json.getJSONObject("installationsPerVersion");
           final JSONObject installationsPercentagePerVersion = json.getJSONObject("installationsPercentagePerVersion");
-          stats.setInstallations(installations.keySet().stream().map((timestamp) -> {
-            return new Installation(
+          stats.setInstallations(installations.keySet().stream().map((timestamp) ->
+            new Installation(
               Long.valueOf(timestamp),
               installations.getInt(timestamp)
-            );
-          }).collect(Collectors.toList()));
-          stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) -> {
-            return new InstallationPercentage(
+            )
+          ).sorted(Comparator.comparingLong(Installation::getTimestamp)) .collect(Collectors.toList()));
+          stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) ->
+            new InstallationPercentage(
               Long.valueOf(timestamp),
               installationsPercentage.getDouble(timestamp)
-            );
-          }).collect(Collectors.toList()));
-          stats.setInstallationsPercentagePerVersion(installationsPerVersion.keySet().stream().map((version) -> {
-            return new InstallationPercentageVersion(
+            )
+          ).sorted(Comparator.comparing(InstallationPercentage::getTimestamp)).collect(Collectors.toList()));
+          stats.setInstallationsPerVersion(installationsPerVersion.keySet().stream().map((version) ->
+            new InstallationVersion(
               version,
               installationsPerVersion.getInt(version)
-            );
-          }).collect(Collectors.toList()));
-          stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map((version) -> {
-            return new InstallationPercentageVersion(
+            )
+          ).sorted(Comparator.comparing(InstallationVersion::getVersion)).collect(Collectors.toList()));
+          stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map((version) ->
+            new InstallationPercentageVersion(
               version,
               installationsPercentagePerVersion.getDouble(version)
-            );
-          }).collect(Collectors.toList()));
-          final String lifetime = installations.keySet().stream().max(String::compareTo).orElse(null);
-          stats.setLifetime(lifetime != null ? installations.getInt(lifetime) : 0);
+            )
+          ).sorted(Comparator.comparing(InstallationPercentageVersion::getVersion)).collect(Collectors.toList()));
+          stats.setLifetime(!stats.getInstallations().isEmpty() ? stats.getInstallations().get(stats.getInstallations().size()-1).getTotal() : 0);
+          if (stats.getInstallations().size() > 1) {
+            final int size = stats.getInstallations().size();
+            final long trend = stats.getInstallations().get(size-1).getTotal() - stats.getInstallations().get(size-2).getTotal();
+            stats.setTrend(trend);
+          }
         }
         plugin.setStats(stats);
         plugins.add(plugin);

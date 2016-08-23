@@ -73,6 +73,14 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
+  public void testSearchSortByTrend() {
+    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "trend").request().get(Plugins.class);
+    Assert.assertNotNull("Search for 'git' null", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.TREND not correct", plugins.getPlugins().get(0).getStats().getTrend() > plugins.getPlugins().get(1).getStats().getTrend());
+  }
+
+  @Test
   public void testSearchSortByUpdated() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "updated").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
@@ -169,6 +177,16 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("Recently updated order not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
     Assert.assertEquals("Recently updated limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
+  }
+
+  @Test
+  public void testGetTrend() {
+    final Plugins plugins = target("/plugins/trend").request().get(Plugins.class);
+    Assert.assertNotNull("Trend null", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("Trend order not correct", plugins.getPlugins().get(0).getStats().getTrend() > plugins.getPlugins().get(1).getStats().getTrend());
+    Assert.assertEquals("Trend limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
+
   }
 
 }

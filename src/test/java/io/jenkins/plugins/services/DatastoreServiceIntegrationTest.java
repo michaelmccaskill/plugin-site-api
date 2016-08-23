@@ -60,7 +60,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchSortByName() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.NAME,Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.NAME, Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
     Assert.assertNotNull("Search for 'git' sort by name is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.NAME not correct", plugins.getPlugins().get(0).getName().compareTo(plugins.getPlugins().get(1).getName()) < 0);
@@ -75,10 +75,18 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchSortByTitle() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.NAME,Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.TITLE ,Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
     Assert.assertNotNull("Search for 'git' sort by title is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.TITLE not correct", plugins.getPlugins().get(0).getTitle().compareTo(plugins.getPlugins().get(1).getTitle()) < 0);
+  }
+
+  @Test
+  public void testSearchSortByTrend() {
+    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.TREND, Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    Assert.assertNotNull("Search for 'git' sort by trend is null", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.TREND not correct", plugins.getPlugins().get(0).getStats().getTrend() > plugins.getPlugins().get(1).getStats().getTrend());
   }
 
   @Test

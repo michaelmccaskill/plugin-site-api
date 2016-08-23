@@ -63,4 +63,15 @@ public class PluginsEndpoint {
     }
   }
 
+  @Path("/trend")
+  @GET
+  public Plugins getTrend(@DefaultValue("10") @QueryParam("limit") int limit) {
+    try {
+      return datastoreService.search(new SearchOptions(null, SortBy.TREND, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
+    } catch (ServiceException e) {
+      logger.error("Problem getting trend", e);
+      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }

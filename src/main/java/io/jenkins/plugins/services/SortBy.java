@@ -6,6 +6,7 @@ public enum SortBy {
   NAME,
   RELEVANCE,
   TITLE,
+  TREND,
   UPDATED;
 
   public String value() {
