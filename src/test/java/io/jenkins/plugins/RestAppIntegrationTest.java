@@ -189,4 +189,12 @@ public class RestAppIntegrationTest extends JerseyTest {
 
   }
 
+  @Test
+  public void testGetVersions() {
+    final Versions versions = target("/versions").request().get(Versions.class);
+    Assert.assertNotNull("Versions null", versions);
+    Assert.assertFalse("Versions empty", versions.getVersions().isEmpty());
+    Assert.assertEquals("Versions limit doesn't match", versions.getLimit(), versions.getVersions().size());
+  }
+
 }

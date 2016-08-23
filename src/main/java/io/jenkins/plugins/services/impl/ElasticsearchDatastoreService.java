@@ -213,4 +213,22 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     }
   }
 
+  @Override
+  public Versions getVersions() throws ServiceException {
+    try {
+      final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
+        .addAggregation(AggregationBuilders.terms("versions").field("requiredCore").size(0))
+        .setSize(0);
+      final SearchResponse response = requestBuilder.execute().get();
+      final List<String> versions = new ArrayList<>();
+      final StringTerms agg = response.getAggregations().get("versions");
+      agg.getBuckets().forEach((entry) -> {
+        versions.add(entry.getKeyAsString());
+      });
+      return new Versions(versions);
+    } catch (Exception e) {
+      logger.error("Problem getting versions", e);
+      throw new ServiceException("Problem getting versions", e);
+    }
+  }
 }

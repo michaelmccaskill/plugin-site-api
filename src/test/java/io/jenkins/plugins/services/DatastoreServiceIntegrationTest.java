@@ -170,5 +170,13 @@ public class DatastoreServiceIntegrationTest {
     Assert.assertEquals("Labels limit doesn't match", labels.getLimit(), labels.getLabels().size());
   }
 
+  @Test
+  public void testGetVersions() {
+    final Versions versions = datastoreService.getVersions();
+    Assert.assertNotNull("Versions null", versions);
+    Assert.assertFalse("Versions empty", versions.getVersions().isEmpty());
+    Assert.assertEquals("Versions limit doesn't match", versions.getLimit(), versions.getVersions().size());
+  }
+
 
 }

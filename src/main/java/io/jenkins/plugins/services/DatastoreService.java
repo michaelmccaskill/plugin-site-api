@@ -14,4 +14,6 @@ public interface DatastoreService {
 
   Labels getLabels() throws ServiceException;
 
+  Versions getVersions() throws ServiceException;
+
 }
