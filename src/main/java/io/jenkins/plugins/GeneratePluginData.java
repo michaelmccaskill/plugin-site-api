@@ -195,7 +195,7 @@ public class GeneratePluginData {
               installationsPercentagePerVersion.getDouble(version)
             )
           ).sorted(Comparator.comparing(InstallationPercentageVersion::getVersion)).collect(Collectors.toList()));
-          stats.setLifetime(!stats.getInstallations().isEmpty() ? stats.getInstallations().get(stats.getInstallations().size()-1).getTotal() : 0);
+          stats.setCurrentInstalls(!stats.getInstallations().isEmpty() ? stats.getInstallations().get(stats.getInstallations().size()-1).getTotal() : 0);
           if (stats.getInstallations().size() > 1) {
             final int size = stats.getInstallations().size();
             final long trend = stats.getInstallations().get(size-1).getTotal() - stats.getInstallations().get(size-2).getTotal();

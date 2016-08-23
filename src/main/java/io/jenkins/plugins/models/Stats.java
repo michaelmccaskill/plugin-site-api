@@ -20,8 +20,8 @@ public class Stats {
   @JsonProperty("installationsPercentagePerVersion")
   private List<InstallationPercentageVersion> installationsPercentagePerVersion;
 
-  @JsonProperty("lifetime")
-  private long lifetime;
+  @JsonProperty("currentInstalls")
+  private long currentInstalls;
 
   @JsonProperty("trend")
   private long trend;
@@ -29,12 +29,12 @@ public class Stats {
   public Stats() {
   }
 
-  public Stats(List<Installation> installations, List<InstallationPercentage> installationsPercentage, List<InstallationVersion> installationsPerVersion, List<InstallationPercentageVersion> installationsPercentagePerVersion, long lifetime, long trend) {
+  public Stats(List<Installation> installations, List<InstallationPercentage> installationsPercentage, List<InstallationVersion> installationsPerVersion, List<InstallationPercentageVersion> installationsPercentagePerVersion, long currentInstalls, long trend) {
     this.installations = installations;
     this.installationsPercentage = installationsPercentage;
     this.installationsPerVersion = installationsPerVersion;
     this.installationsPercentagePerVersion = installationsPercentagePerVersion;
-    this.lifetime = lifetime;
+    this.currentInstalls = currentInstalls;
     this.trend = trend;
   }
 
@@ -70,12 +70,12 @@ public class Stats {
     this.installationsPercentagePerVersion = installationsPercentagePerVersion;
   }
 
-  public long getLifetime() {
-    return lifetime;
+  public long getCurrentInstalls() {
+    return currentInstalls;
   }
 
-  public void setLifetime(long lifetime) {
-    this.lifetime = lifetime;
+  public void setCurrentInstalls(long currentInstalls) {
+    this.currentInstalls = currentInstalls;
   }
 
   public long getTrend() {

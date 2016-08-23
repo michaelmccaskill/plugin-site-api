@@ -46,7 +46,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "installs").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getCurrentInstalls() > plugins.getPlugins().get(1).getStats().getCurrentInstalls());
   }
 
   @Test
@@ -166,7 +166,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Plugins plugins = target("/plugins/installed").request().get(Plugins.class);
     Assert.assertNotNull("Most installed null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    Assert.assertTrue("Most installed order not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+    Assert.assertTrue("Most installed order not correct", plugins.getPlugins().get(0).getStats().getCurrentInstalls() > plugins.getPlugins().get(1).getStats().getCurrentInstalls());
     Assert.assertEquals("Most installed limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
   }
 

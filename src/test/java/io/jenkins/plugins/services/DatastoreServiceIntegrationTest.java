@@ -55,7 +55,7 @@ public class DatastoreServiceIntegrationTest {
     final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.INSTALLS, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
     Assert.assertNotNull("Search for 'git' sort by installs is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getLifetime() > plugins.getPlugins().get(1).getStats().getLifetime());
+    Assert.assertTrue("SortBy.INSTALLS not correct", plugins.getPlugins().get(0).getStats().getCurrentInstalls() > plugins.getPlugins().get(1).getStats().getCurrentInstalls());
   }
 
   @Test
