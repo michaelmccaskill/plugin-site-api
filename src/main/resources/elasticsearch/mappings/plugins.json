@@ -25,10 +25,10 @@
           }
         }
       },
-      "developers" : {
+      "maintainers" : {
         "type" : "nested",
         "properties" : {
-          "developerId" : {
+          "id" : {
             "type" : "string",
             "index" : "not_analyzed"
           },

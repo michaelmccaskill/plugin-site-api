@@ -6,28 +6,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Developers {
+public class Maintainers {
 
-  @JsonProperty("developers")
-  private List<String> developers;
+  @JsonProperty("maintainers")
+  private List<String> maintainers;
 
   @JsonProperty("limit")
   private int limit;
 
-  public Developers() {
+  public Maintainers() {
   }
 
-  public Developers(List<String> developers) {
-    this.developers = developers;
-    this.limit = developers.size();
+  public Maintainers(List<String> maintainers) {
+    this.maintainers = maintainers;
+    this.limit = maintainers.size();
   }
 
-  public List<String> getDevelopers() {
-    return developers;
+  public List<String> getMaintainers() {
+    return maintainers;
   }
 
-  public void setDevelopers(List<String> developers) {
-    this.developers = developers;
+  public void setMaintainers(List<String> maintainers) {
+    this.maintainers = maintainers;
   }
 
   public int getLimit() {

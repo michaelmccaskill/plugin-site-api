@@ -137,7 +137,7 @@ public class GeneratePluginData {
           }
         }
         plugin.setDependencies(dependencies);
-        final List<Developer> developers = new ArrayList<>();
+        final List<Maintainer> maintainers = new ArrayList<>();
         final JSONArray developersJson = pluginJson.getJSONArray("developers");
         if (developersJson != null) {
           StreamSupport.stream(developersJson.spliterator(), false).forEach((obj) -> {
@@ -145,15 +145,15 @@ public class GeneratePluginData {
             final String name = json.optString("name", null);
             final String email = json.optString("email", null);
             final String developerId = json.optString("developerId", (name != null ? name : email));
-            final Developer developer = new Developer(
+            final Maintainer maintainer = new Maintainer(
               developerId,
               name,
               email
             );
-            developers.add(developer);
+            maintainers.add(maintainer);
           });
         }
-        plugin.setDevelopers(developers);
+        plugin.setMaintainers(maintainers);
         if (pluginJson.optString("buildDate", null) != null) {
           final LocalDate buildDate = LocalDate.parse(pluginJson.getString("buildDate"), BUILD_DATE_FORMATTER);
           plugin.setBuildDate(buildDate);

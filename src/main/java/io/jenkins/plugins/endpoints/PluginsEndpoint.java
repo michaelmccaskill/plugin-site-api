@@ -29,12 +29,12 @@ public class PluginsEndpoint {
       @DefaultValue("relevance") @QueryParam("sort") SortBy sortBy,
       @DefaultValue("") @QueryParam("categories") String categories,
       @DefaultValue("") @QueryParam("labels") String labels,
-      @DefaultValue("") @QueryParam("authors") String authors,
+      @DefaultValue("") @QueryParam("maintainers") String maintainers,
       @DefaultValue("") @QueryParam("core")String core,
       @DefaultValue("50") @QueryParam("limit") int limit,
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
-      return datastoreService.search(new SearchOptions(query, sortBy, categories, labels, authors, core, limit, page));
+      return datastoreService.search(new SearchOptions(query, sortBy, categories, labels, maintainers, core, limit, page));
     } catch (ServiceException e) {
       logger.error("Problem getting plugins", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);

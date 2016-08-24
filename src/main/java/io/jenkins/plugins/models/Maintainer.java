@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Developer {
+public class Maintainer {
 
-  @JsonProperty("developerId")
-  private String developerId;
+  @JsonProperty("id")
+  private String id;
 
   @JsonProperty("name")
   private String name;
@@ -15,21 +15,21 @@ public class Developer {
   @JsonProperty("email")
   private String email;
 
-  public Developer() {
+  public Maintainer() {
   }
 
-  public Developer(String developerId, String name, String email) {
-    this.developerId = developerId;
+  public Maintainer(String id, String name, String email) {
+    this.id = id;
     this.name = name;
     this.email = email;
   }
 
-  public String getDeveloperId() {
-    return developerId;
+  public String getId() {
+    return id;
   }
 
-  public void setDeveloperId(String developerId) {
-    this.developerId = developerId;
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {

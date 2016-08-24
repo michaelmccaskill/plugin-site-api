@@ -45,12 +45,12 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         queryBuilder
           .should(QueryBuilders.matchQuery("title", searchOptions.getQuery()))
           .should(QueryBuilders.matchQuery("name", searchOptions.getQuery()))
-          .should(QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", searchOptions.getQuery())))
+          .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.name", searchOptions.getQuery())))
           .must(QueryBuilders.matchQuery("excerpt", searchOptions.getQuery()));
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
       }
-      if (!searchOptions.getAuthors().isEmpty() || !searchOptions.getCategories().isEmpty()
+      if (!searchOptions.getMaintainers().isEmpty() || !searchOptions.getCategories().isEmpty()
             || searchOptions.getCore() != null || !searchOptions.getLabels().isEmpty()) {
         final BoolQueryBuilder filter = QueryBuilders.boolQuery();
         if (!searchOptions.getCategories().isEmpty() && !searchOptions.getLabels().isEmpty()) {
@@ -74,10 +74,10 @@ public class ElasticsearchDatastoreService implements DatastoreService {
             )
           );
         }
-        if (!searchOptions.getAuthors().isEmpty()) {
+        if (!searchOptions.getMaintainers().isEmpty()) {
           filter.must(
             QueryBuilders.boolQuery().should(
-              QueryBuilders.nestedQuery("developers", QueryBuilders.matchQuery("developers.name", searchOptions.getAuthors()))
+              QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.name", searchOptions.getMaintainers()))
             )
           );
         }
@@ -150,25 +150,25 @@ public class ElasticsearchDatastoreService implements DatastoreService {
   }
 
   @Override
-  public Developers getDevelopers() throws ServiceException {
+  public Maintainers getMaintainers() throws ServiceException {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
-        .addAggregation(AggregationBuilders.nested("developers").path("developers")
-          .subAggregation(AggregationBuilders.terms("developers").field("developers.developerId").size(0))
+        .addAggregation(AggregationBuilders.nested("maintainers").path("maintainers")
+          .subAggregation(AggregationBuilders.terms("maintainers").field("maintainers.id").size(0))
         )
         .setSize(0);
       final SearchResponse response = requestBuilder.execute().get();
-      final List<String> developers = new ArrayList<>();
-      final InternalNested nested = response.getAggregations().get("developers");
-      final StringTerms agg = nested.getAggregations().get("developers");
+      final List<String> maintainers = new ArrayList<>();
+      final InternalNested nested = response.getAggregations().get("maintainers");
+      final StringTerms agg = nested.getAggregations().get("maintainers");
       agg.getBuckets().forEach((entry) -> {
-        developers.add(entry.getKeyAsString());
+        maintainers.add(entry.getKeyAsString());
       });
-      developers.sort(Comparator.naturalOrder());
-      return new Developers(developers);
+      maintainers.sort(Comparator.naturalOrder());
+      return new Maintainers(maintainers);
     } catch (Exception e) {
-      logger.error("Problem getting developers", e);
-      throw new ServiceException("Problem getting developers", e);
+      logger.error("Problem getting maintainers", e);
+      throw new ServiceException("Problem getting maintainers", e);
     }
   }
 

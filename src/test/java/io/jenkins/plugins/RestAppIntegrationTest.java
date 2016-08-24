@@ -29,7 +29,7 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertEquals("git", plugin.getName());
     Assert.assertFalse("Categories are empty", plugin.getCategories().isEmpty());
     Assert.assertFalse("Dependencies are empty", plugin.getDependencies().isEmpty());
-    Assert.assertFalse("Developers are empty", plugin.getDevelopers().isEmpty());
+    Assert.assertFalse("Maintainers are empty", plugin.getMaintainers().isEmpty());
     Assert.assertFalse("Labels are empty", plugin.getLabels().isEmpty());
     Assert.assertNotNull("Stats are null", plugin.getStats());
   }
@@ -117,8 +117,8 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Plugins plugins = target("/plugins").queryParam("authors", "Kohsuke Kawaguchi").request().get(Plugins.class);
     Assert.assertNotNull("Search for categories 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
-      for (Developer developer : plugin.getDevelopers()) {
-        if (developer.getName().equalsIgnoreCase("Kohsuke Kawaguchi")) {
+      for (Maintainer maintainer : plugin.getMaintainers()) {
+        if (maintainer.getName().equalsIgnoreCase("Kohsuke Kawaguchi")) {
           return;
         }
       }
@@ -154,11 +154,11 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testGetDevelopers() {
-    final Developers developers = target("/developers").request().get(Developers.class);
-    Assert.assertNotNull("Developers null", developers);
-    Assert.assertFalse("Developers empty", developers.getDevelopers().isEmpty());
-    Assert.assertEquals("Developers limit doesn't match", developers.getLimit(), developers.getDevelopers().size());
+  public void testGetMaintainers() {
+    final Maintainers maintainers = target("/maintainers").request().get(Maintainers.class);
+    Assert.assertNotNull("Maintainers null", maintainers);
+    Assert.assertFalse("Maintainers empty", maintainers.getMaintainers().isEmpty());
+    Assert.assertEquals("Maintainers limit doesn't match", maintainers.getLimit(), maintainers.getMaintainers().size());
   }
 
   @Test
@@ -186,7 +186,6 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("Trend order not correct", plugins.getPlugins().get(0).getStats().getTrend() > plugins.getPlugins().get(1).getStats().getTrend());
     Assert.assertEquals("Trend limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
-
   }
 
   @Test

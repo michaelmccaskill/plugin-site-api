@@ -10,28 +10,28 @@ public class SearchOptions {
   private SortBy sortBy;
   private List<String> categories;
   private List<String> labels;
-  private List<String> authors;
+  private List<String> maintainers;
   private String core;
   private Integer limit;
   private Integer page;
 
-  public SearchOptions(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> authors, String core, Integer limit, Integer page) {
+  public SearchOptions(String query, SortBy sortBy, List<String> categories, List<String> labels, List<String> maintainers, String core, Integer limit, Integer page) {
     setQuery(query);
     setSortBy(sortBy);
     setCategories(categories);
     setLabels(labels);
-    setAuthors(authors);
+    setMaintainers(maintainers);
     setCore(core);
     setLimit(limit);
     setPage(page);
   }
 
-  public SearchOptions(String query, SortBy sortBy, String categories, String labels, String authors, String core, Integer limit, Integer page) {
+  public SearchOptions(String query, SortBy sortBy, String categories, String labels, String maintainers, String core, Integer limit, Integer page) {
     setQuery(query);
     setSortBy(sortBy);
     setCategories(categories != null && !categories.trim().isEmpty() ? Arrays.asList(categories.split(",")) : Collections.emptyList());
     setLabels(labels != null && !labels.trim().isEmpty() ? Arrays.asList(labels.split(",")) : Collections.emptyList());
-    setAuthors(authors != null && !authors.trim().isEmpty() ? Arrays.asList(authors.split(",")) : Collections.emptyList());
+    setMaintainers(maintainers != null && !maintainers.trim().isEmpty() ? Arrays.asList(maintainers.split(",")) : Collections.emptyList());
     setCore(core);
     setLimit(limit);
     setPage(page);
@@ -69,12 +69,12 @@ public class SearchOptions {
     this.labels = labels != null ? labels : Collections.emptyList();
   }
 
-  public List<String> getAuthors() {
-    return authors;
+  public List<String> getMaintainers() {
+    return maintainers;
   }
 
-  public void setAuthors(List<String> authors) {
-    this.authors = authors != null ? authors : Collections.emptyList();
+  public void setMaintainers(List<String> maintainers) {
+    this.maintainers = maintainers != null ? maintainers : Collections.emptyList();
   }
 
   public String getCore() {

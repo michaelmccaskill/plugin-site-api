@@ -31,8 +31,8 @@ public class Plugin {
   @JsonProperty("dependencies")
   private List<Dependency> dependencies;
 
-  @JsonProperty("developers")
-  private List<Developer> developers;
+  @JsonProperty("maintainers")
+  private List<Maintainer> maintainers;
 
   @JsonProperty("excerpt")
   private String excerpt;
@@ -92,14 +92,14 @@ public class Plugin {
   public Plugin() {
   }
 
-  public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Developer> developers,
+  public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, String scm, String sha1,
                 Stats stats, String title, String url, String version, Wiki wiki) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
-    this.developers = developers;
+    this.maintainers = maintainers;
     this.excerpt = excerpt;
     this.gav = gav;
     this.labels = labels;
@@ -141,12 +141,12 @@ public class Plugin {
     this.dependencies = dependencies;
   }
 
-  public List<Developer> getDevelopers() {
-    return developers;
+  public List<Maintainer> getMaintainers() {
+    return maintainers;
   }
 
-  public void setDevelopers(List<Developer> developers) {
-    this.developers = developers;
+  public void setMaintainers(List<Maintainer> maintainers) {
+    this.maintainers = maintainers;
   }
 
   public String getExcerpt() {

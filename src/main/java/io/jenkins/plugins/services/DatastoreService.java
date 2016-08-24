@@ -10,7 +10,7 @@ public interface DatastoreService {
 
   Categories getCategories() throws ServiceException;
 
-  Developers getDevelopers() throws ServiceException;
+  Maintainers getMaintainers() throws ServiceException;
 
   Labels getLabels() throws ServiceException;
 

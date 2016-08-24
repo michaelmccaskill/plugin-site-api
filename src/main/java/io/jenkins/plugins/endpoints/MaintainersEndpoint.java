@@ -1,6 +1,6 @@
 package io.jenkins.plugins.endpoints;
 
-import io.jenkins.plugins.models.Developers;
+import io.jenkins.plugins.models.Maintainers;
 import io.jenkins.plugins.services.DatastoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/developers")
+@Path("/maintainers")
 @Produces(MediaType.APPLICATION_JSON)
-public class DevelopersEndpoint {
+public class MaintainersEndpoint {
 
   private Logger logger = LoggerFactory.getLogger(CategoriesEndpoint.class);
 
@@ -23,11 +23,11 @@ public class DevelopersEndpoint {
   private DatastoreService datastoreService;
 
   @GET
-  public Developers getDevelopers() {
+  public Maintainers getMaintainers() {
     try {
-      return datastoreService.getDevelopers();
+      return datastoreService.getMaintainers();
     } catch (Exception e) {
-      logger.error("Problem getting developers", e);
+      logger.error("Problem getting maintainers", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
