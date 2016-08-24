@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -139,15 +140,18 @@ public class GeneratePluginData {
         final List<Developer> developers = new ArrayList<>();
         final JSONArray developersJson = pluginJson.getJSONArray("developers");
         if (developersJson != null) {
-          for (int i = 0; i < developersJson.length(); i++) {
-            final JSONObject json = developersJson.getJSONObject(i);
+          StreamSupport.stream(developersJson.spliterator(), false).forEach((obj) -> {
+            final JSONObject json = (JSONObject)obj;
+            final String name = json.optString("name", null);
+            final String email = json.optString("email", null);
+            final String developerId = json.optString("developerId", (name != null ? name : email));
             final Developer developer = new Developer(
-              json.optString("developerId", null),
-              json.optString("name", null),
-              json.optString("email", null)
+              developerId,
+              name,
+              email
             );
             developers.add(developer);
-          }
+          });
         }
         plugin.setDevelopers(developers);
         if (pluginJson.optString("buildDate", null) != null) {
