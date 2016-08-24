@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ElasticsearchDatastoreService implements DatastoreService {
 
@@ -157,7 +154,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     try {
       final SearchRequestBuilder requestBuilder = esClient.prepareSearch("plugins")
         .addAggregation(AggregationBuilders.nested("developers").path("developers")
-          .subAggregation(AggregationBuilders.terms("developers").field("developers.name.raw").size(0))
+          .subAggregation(AggregationBuilders.terms("developers").field("developers.developerId").size(0))
         )
         .setSize(0);
       final SearchResponse response = requestBuilder.execute().get();
@@ -167,6 +164,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       agg.getBuckets().forEach((entry) -> {
         developers.add(entry.getKeyAsString());
       });
+      developers.sort(Comparator.naturalOrder());
       return new Developers(developers);
     } catch (Exception e) {
       logger.error("Problem getting developers", e);
