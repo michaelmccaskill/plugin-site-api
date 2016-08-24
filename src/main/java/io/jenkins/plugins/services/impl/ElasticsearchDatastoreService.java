@@ -45,6 +45,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         queryBuilder
           .should(QueryBuilders.matchQuery("title", searchOptions.getQuery()))
           .should(QueryBuilders.matchQuery("name", searchOptions.getQuery()))
+          .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.id", searchOptions.getQuery())))
           .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.name", searchOptions.getQuery())))
           .must(QueryBuilders.matchQuery("excerpt", searchOptions.getQuery()));
       } else {
@@ -77,6 +78,8 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         if (!searchOptions.getMaintainers().isEmpty()) {
           filter.must(
             QueryBuilders.boolQuery().should(
+              QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.id", searchOptions.getMaintainers()))
+            ).should(
               QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.name", searchOptions.getMaintainers()))
             )
           );
