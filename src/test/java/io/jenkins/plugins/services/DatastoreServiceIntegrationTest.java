@@ -122,9 +122,9 @@ public class DatastoreServiceIntegrationTest {
   }
 
   @Test
-  public void testSearchAuthors() {
+  public void testSearchMaintainers() {
     final Plugins plugins = datastoreService.search(new SearchOptions(null, null, Collections.emptyList(), Collections.emptyList(), Arrays.asList("Kohsuke Kawaguchi"), null, 50, 1));
-    Assert.assertNotNull("Search for categories 'scm' is null", plugins);
+    Assert.assertNotNull("Search for maintainers 'Kohsuke Kawaguchi' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       for (Maintainer maintainer : plugin.getMaintainers()) {
         if (maintainer.getName().equalsIgnoreCase("Kohsuke Kawaguchi")) {
@@ -132,7 +132,7 @@ public class DatastoreServiceIntegrationTest {
         }
       }
     }
-    Assert.fail("Didn't find plugins with authors 'Kohsuke Kawaguchi'");
+    Assert.fail("Didn't find plugins with maintainers 'Kohsuke Kawaguchi'");
   }
 
   @Test

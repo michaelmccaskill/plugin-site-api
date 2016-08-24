@@ -113,8 +113,8 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchAuthors() {
-    final Plugins plugins = target("/plugins").queryParam("authors", "Kohsuke Kawaguchi").request().get(Plugins.class);
+  public void testSearchMaintainers() {
+    final Plugins plugins = target("/plugins").queryParam("maintainers", "Kohsuke Kawaguchi").request().get(Plugins.class);
     Assert.assertNotNull("Search for categories 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       for (Maintainer maintainer : plugin.getMaintainers()) {
@@ -123,7 +123,7 @@ public class RestAppIntegrationTest extends JerseyTest {
         }
       }
     }
-    Assert.fail("Didn't find plugins with authors 'Kohsuke Kawaguchi'");
+    Assert.fail("Didn't find plugins with maintainers 'Kohsuke Kawaguchi'");
   }
 
   @Test
