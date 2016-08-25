@@ -42,8 +42,8 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchSortByInstalls() {
-    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "installs").request().get(Plugins.class);
+  public void testSearchSortByInstalled() {
+    final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "installed").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.INSTALLED not correct", plugins.getPlugins().get(0).getStats().getCurrentInstalls() > plugins.getPlugins().get(1).getStats().getCurrentInstalls());
