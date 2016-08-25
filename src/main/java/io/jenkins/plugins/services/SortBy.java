@@ -2,7 +2,7 @@ package io.jenkins.plugins.services;
 
 public enum SortBy {
 
-  INSTALLS,
+  INSTALLED,
   NAME,
   RELEVANCE,
   TITLE,

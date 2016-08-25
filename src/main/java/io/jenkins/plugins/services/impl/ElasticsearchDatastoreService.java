@@ -92,7 +92,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       requestBuilder.setQuery(queryBuilder);
       if (searchOptions.getSortBy() != null) {
         switch (searchOptions.getSortBy()) {
-          case INSTALLS:
+          case INSTALLED:
             requestBuilder.addSort(SortBuilders.fieldSort("stats.currentInstalls").setNestedPath("stats").order(SortOrder.DESC));
             break;
           case NAME:
