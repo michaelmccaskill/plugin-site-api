@@ -48,6 +48,9 @@ public class ElasticsearchDatastoreService implements DatastoreService {
           .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.id", searchOptions.getQuery())))
           .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.name", searchOptions.getQuery())))
           .should(QueryBuilders.matchQuery("excerpt", searchOptions.getQuery()))
+          .should(QueryBuilders.termsQuery("categories", searchOptions.getQuery().toLowerCase().split(",")))
+          .should(QueryBuilders.termsQuery("labels", searchOptions.getQuery().toLowerCase().split(",")))
+          .should(QueryBuilders.termsQuery("requireCore", searchOptions.getQuery().toLowerCase().split(",")))
         );
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
