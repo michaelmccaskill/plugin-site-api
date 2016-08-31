@@ -42,12 +42,16 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         .setSize(searchOptions.getLimit());
       final BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
       if (searchOptions.getQuery() != null) {
-        queryBuilder
+        queryBuilder.must(QueryBuilders.boolQuery()
           .should(QueryBuilders.matchQuery("title", searchOptions.getQuery()))
           .should(QueryBuilders.matchQuery("name", searchOptions.getQuery()))
           .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.id", searchOptions.getQuery())))
           .should(QueryBuilders.nestedQuery("maintainers", QueryBuilders.matchQuery("maintainers.name", searchOptions.getQuery())))
-          .should(QueryBuilders.matchQuery("excerpt", searchOptions.getQuery()));
+          .should(QueryBuilders.matchQuery("excerpt", searchOptions.getQuery()))
+          .should(QueryBuilders.termsQuery("categories", searchOptions.getQuery().toLowerCase().split(",")))
+          .should(QueryBuilders.termsQuery("labels", searchOptions.getQuery().toLowerCase().split(",")))
+          .should(QueryBuilders.termsQuery("requireCore", searchOptions.getQuery().toLowerCase().split(",")))
+        );
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
       }
