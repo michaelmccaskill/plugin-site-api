@@ -117,6 +117,9 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       final SearchResponse response = requestBuilder.execute().get();
       final long total = response.getHits().getTotalHits();
       final long pages = (total + searchOptions.getLimit() - 1) / searchOptions.getLimit();
+      if (response.getHits().getHits().length == 0) {
+        return new Plugins(Collections.emptyList(), searchOptions.getPage(), 0, 0, searchOptions.getLimit());
+      }
       return new Plugins(
         ElasticsearchTransformer.transformHits(response.getHits()),
         searchOptions.getPage(), pages, total, searchOptions.getLimit()
