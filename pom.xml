@@ -179,11 +179,6 @@
         <artifactId>jetty-maven-plugin</artifactId>
         <version>9.3.10.v20160621</version>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.5.0</version>
-      </plugin>
     </plugins>
   </build>
 
@@ -191,5 +186,32 @@
     <developerConnection>scm:git:ssh://git@github.com/jenkins-infra/plugin-site.git</developerConnection>
     <connection>scm:git:ssh://git@github.com/jenkins-infra/plugin-site.git</connection>
   </scm>
+
+  <profiles>
+    <profile>
+      <id>generatePluginData</id>
+      <build>
+        <defaultGoal>compile</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.5.0</version>
+            <executions>
+              <execution>
+                <phase>compile</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>io.jenkins.plugins.GeneratePluginData</mainClass>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
