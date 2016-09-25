@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>Transforms various Elasticsearch structures into domain models</p>
+ *
+ * @see Plugin
+ */
 public class ElasticsearchTransformer {
 
   public static <T> T transformGet(GetResponse get, Class<T> type) throws IOException {

@@ -7,6 +7,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
+/**
+ * <p>Filter that enables CORS headers to allow the JS front end access</p>
+ */
 @Provider
 public class CORSResponseFilter implements ContainerResponseFilter {
 

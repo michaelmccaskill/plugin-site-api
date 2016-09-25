@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
- * Copied & modified from:
+ * Copied and modified from:
  * https://orrsella.com/2014/10/28/embedded-elasticsearch-server-for-scala-integration-tests/
  */
 public class EmbeddedElasticsearchServer {

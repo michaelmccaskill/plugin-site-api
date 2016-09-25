@@ -31,8 +31,17 @@ import java.util.stream.StreamSupport;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Class that generates the final plugins.json file that is intended to be used for indexing
- * in the embedded Elasticsearch node.
+ * <p>Class that generates the final plugins.json.gzip file that is used for indexing in the embedded Elasticsearch
+ * node.</p>
+ *
+ *
+ * This is broken down into a few steps:
+ * <ol>
+ *   <li>Download plugin information from Jenkins update center</li>
+ *   <li>Git clone plugin statistics</li>
+ *   <li>Parse the plugin information, matching it with plugin statistics</li>
+ *   <li>Persist result to JSON</li>
+ * </ol>
  */
 public class GeneratePluginData {
 
@@ -50,7 +59,8 @@ public class GeneratePluginData {
 
   public void generate() {
     final JSONObject pluginsJson = getPlugins();
-    final List<Plugin> plugins = generatePlugins(pluginsJson);
+    final Path statisticsPath = downloadStatistics();
+    final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath);
     writePluginsToFile(plugins);
   }
 
@@ -87,131 +97,157 @@ public class GeneratePluginData {
     }
   }
 
-  private List<Plugin> generatePlugins(JSONObject pluginsJson) {
+  private Path downloadStatistics() {
     try {
       final Path tempDir = Files.createTempDirectory("infra-statistics");
       logger.info("Cloning jenkins-infra/infra-statistics");
       Git.cloneRepository().setURI("git://github.com/jenkins-infra/infra-statistics.git").setBranch("gh-pages").setDirectory(tempDir.toFile()).call();
       logger.info("Finished cloning jenkins-infra/infra-statistics");
+      return tempDir;
+    } catch (Exception e) {
+      logger.error("Problem downloading plugin statistics", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath) {
+    try {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       final List<Plugin> plugins = new ArrayList<>();
       for (String key : pluginsJson.keySet()) {
-        final JSONObject pluginJson = pluginsJson.getJSONObject(key);
-        final Plugin plugin = new Plugin();
-        plugin.setExcerpt(pluginJson.optString("excerpt", null));
-        plugin.setGav(pluginJson.optString("gav", null));
-        plugin.setName(pluginJson.getString("name"));
-        plugin.setPreviousVersion(pluginJson.optString("previousVersion", null));
-        plugin.setRequiredCore(pluginJson.optString("requiredCore"));
-        plugin.setScm(pluginJson.optString("scm", null));
-        plugin.setSha1(pluginJson.optString("sha1", null));
-        plugin.setTitle(pluginJson.optString("title", null));
-        plugin.setUrl(pluginJson.optString("url", null));
-        plugin.setVersion(pluginJson.optString("version", null));
-        plugin.setWiki(new Wiki(null, pluginJson.optString("wiki", null)));
-        final Set<String> categories = new HashSet<>();
-        final List<String> labels = new ArrayList<>();
-        final JSONArray labelsJson = pluginJson.optJSONArray("labels");
-        if (labelsJson != null) {
-          for (int i = 0; i < labelsJson.length(); i++) {
-            final String label = labelsJson.getString(i);
-            if (labelToCategoryMap.containsKey(label)) {
-              categories.add(labelToCategoryMap.get(label));
-            }
-            labels.add(label);
-          }
-        }
-        plugin.setLabels(labels);
-        plugin.setCategories(new ArrayList<>(categories));
-        final List<Dependency> dependencies = new ArrayList<>();
-        final JSONArray dependenciesJson = pluginJson.getJSONArray("dependencies");
-        if (dependenciesJson != null) {
-          for (int i = 0; i < dependenciesJson.length(); i++) {
-            final JSONObject json = dependenciesJson.getJSONObject(i);
-            final Dependency dependency = new Dependency(
-              json.optString("name", null),
-              json.optBoolean("optional", false),
-              json.optString("version", null)
-            );
-            dependencies.add(dependency);
-          }
-        }
-        plugin.setDependencies(dependencies);
-        final List<Maintainer> maintainers = new ArrayList<>();
-        final JSONArray developersJson = pluginJson.getJSONArray("developers");
-        if (developersJson != null) {
-          StreamSupport.stream(developersJson.spliterator(), false).forEach((obj) -> {
-            final JSONObject json = (JSONObject)obj;
-            final String name = json.optString("name", null);
-            final String email = json.optString("email", null);
-            final String developerId = json.optString("developerId", (name != null ? name : email));
-            final Maintainer maintainer = new Maintainer(
-              developerId,
-              name,
-              email
-            );
-            maintainers.add(maintainer);
-          });
-        }
-        plugin.setMaintainers(maintainers);
-        if (pluginJson.optString("buildDate", null) != null) {
-          final LocalDate buildDate = LocalDate.parse(pluginJson.getString("buildDate"), BUILD_DATE_FORMATTER);
-          plugin.setBuildDate(buildDate);
-        }
-        if (pluginJson.optString("previousTimestamp", null) != null) {
-          final LocalDateTime previousTimestamp = LocalDateTime.parse(pluginJson.getString("previousTimestamp"), TIMESTAMP_FORMATTER);
-          plugin.setPreviousTimestamp(previousTimestamp);
-        }
-        if (pluginJson.optString("releaseTimestamp", null) != null) {
-          final LocalDateTime releaseTimestamp = LocalDateTime.parse(pluginJson.getString("releaseTimestamp"), TIMESTAMP_FORMATTER);
-          plugin.setReleaseTimestamp(releaseTimestamp);
-        }
-        final Path file = tempDir.resolve(String.format("plugin-installation-trend%c%s.stats.json", File.separatorChar, key));
-        final Stats stats = new Stats();
-        if (Files.exists(file)) {
-          logger.info(String.format("Processing statistics for %s", key));
-          final JSONObject json = new JSONObject(Files.lines(file).collect(Collectors.joining("\n")));
-          final JSONObject installations = json.getJSONObject("installations");
-          final JSONObject installationsPercentage = json.getJSONObject("installationsPercentage");
-          final JSONObject installationsPerVersion = json.getJSONObject("installationsPerVersion");
-          final JSONObject installationsPercentagePerVersion = json.getJSONObject("installationsPercentagePerVersion");
-          stats.setInstallations(installations.keySet().stream().map((timestamp) ->
-            new Installation(
-              Long.valueOf(timestamp),
-              installations.getInt(timestamp)
-            )
-          ).sorted(Comparator.comparingLong(Installation::getTimestamp)) .collect(Collectors.toList()));
-          stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) ->
-            new InstallationPercentage(
-              Long.valueOf(timestamp),
-              installationsPercentage.getDouble(timestamp)
-            )
-          ).sorted(Comparator.comparing(InstallationPercentage::getTimestamp)).collect(Collectors.toList()));
-          stats.setInstallationsPerVersion(installationsPerVersion.keySet().stream().map((version) ->
-            new InstallationVersion(
-              version,
-              installationsPerVersion.getInt(version)
-            )
-          ).sorted(Comparator.comparing(InstallationVersion::getVersion)).collect(Collectors.toList()));
-          stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map((version) ->
-            new InstallationPercentageVersion(
-              version,
-              installationsPercentagePerVersion.getDouble(version)
-            )
-          ).sorted(Comparator.comparing(InstallationPercentageVersion::getVersion)).collect(Collectors.toList()));
-          stats.setCurrentInstalls(!stats.getInstallations().isEmpty() ? stats.getInstallations().get(stats.getInstallations().size()-1).getTotal() : 0);
-          if (stats.getInstallations().size() > 1) {
-            final int size = stats.getInstallations().size();
-            final long trend = stats.getInstallations().get(size-1).getTotal() - stats.getInstallations().get(size-2).getTotal();
-            stats.setTrend(trend);
-          }
-        }
-        plugin.setStats(stats);
+        final JSONObject json = pluginsJson.getJSONObject(key);
+        final Plugin plugin = parsePlugin(json, statisticsPath, labelToCategoryMap);
         plugins.add(plugin);
       }
       return plugins;
     } catch (Exception e) {
       logger.error("Problem generating plugins", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap) {
+    final Plugin plugin = new Plugin();
+    plugin.setExcerpt(json.optString("excerpt", null));
+    plugin.setGav(json.optString("gav", null));
+    plugin.setName(json.getString("name"));
+    plugin.setPreviousVersion(json.optString("previousVersion", null));
+    plugin.setRequiredCore(json.optString("requiredCore"));
+    plugin.setScm(json.optString("scm", null));
+    plugin.setSha1(json.optString("sha1", null));
+    plugin.setTitle(json.optString("title", null));
+    plugin.setUrl(json.optString("url", null));
+    plugin.setVersion(json.optString("version", null));
+    plugin.setWiki(new Wiki(null, json.optString("wiki", null)));
+    final Set<String> categories = new HashSet<>();
+    final List<String> labels = new ArrayList<>();
+    final JSONArray labelsJson = json.optJSONArray("labels");
+    if (labelsJson != null) {
+      for (int i = 0; i < labelsJson.length(); i++) {
+        final String label = labelsJson.getString(i);
+        if (labelToCategoryMap.containsKey(label)) {
+          categories.add(labelToCategoryMap.get(label));
+        }
+        labels.add(label);
+      }
+    }
+    plugin.setLabels(labels);
+    plugin.setCategories(new ArrayList<>(categories));
+    final List<Dependency> dependencies = new ArrayList<>();
+    final JSONArray dependenciesJson = json.getJSONArray("dependencies");
+    if (dependenciesJson != null) {
+      for (int i = 0; i < dependenciesJson.length(); i++) {
+        final JSONObject dependencyJson = dependenciesJson.getJSONObject(i);
+        final Dependency dependency = new Dependency(
+          dependencyJson.optString("name", null),
+          dependencyJson.optBoolean("optional", false),
+          dependencyJson.optString("version", null)
+        );
+        dependencies.add(dependency);
+      }
+    }
+    plugin.setDependencies(dependencies);
+    final List<Maintainer> maintainers = new ArrayList<>();
+    final JSONArray developersJson = json.getJSONArray("developers");
+    if (developersJson != null) {
+      StreamSupport.stream(developersJson.spliterator(), false).forEach((obj) -> {
+        final JSONObject developerJson = (JSONObject)obj;
+        final String name = developerJson.optString("name", null);
+        final String email = developerJson.optString("email", null);
+        final String developerId = developerJson.optString("developerId", (name != null ? name : email));
+        final Maintainer maintainer = new Maintainer(
+          developerId,
+          name,
+          email
+        );
+        maintainers.add(maintainer);
+      });
+    }
+    plugin.setMaintainers(maintainers);
+    if (json.optString("buildDate", null) != null) {
+      final LocalDate buildDate = LocalDate.parse(json.getString("buildDate"), BUILD_DATE_FORMATTER);
+      plugin.setBuildDate(buildDate);
+    }
+    if (json.optString("previousTimestamp", null) != null) {
+      final LocalDateTime previousTimestamp = LocalDateTime.parse(json.getString("previousTimestamp"), TIMESTAMP_FORMATTER);
+      plugin.setPreviousTimestamp(previousTimestamp);
+    }
+    if (json.optString("releaseTimestamp", null) != null) {
+      final LocalDateTime releaseTimestamp = LocalDateTime.parse(json.getString("releaseTimestamp"), TIMESTAMP_FORMATTER);
+      plugin.setReleaseTimestamp(releaseTimestamp);
+    }
+    final Stats stats = parseStatistics(plugin.getName(), json, statisticsPath);
+    plugin.setStats(stats);
+    return plugin;
+  }
+
+  private Stats parseStatistics(String name, JSONObject json, Path statisticsPath) {
+    try {
+      final Path file = statisticsPath.resolve(String.format("plugin-installation-trend%c%s.stats.json", File.separatorChar, name));
+      final Stats stats = new Stats();
+      if (Files.exists(file)) {
+        logger.info(String.format("Processing statistics for %s", name));
+        final JSONObject statsJson = new JSONObject(Files.lines(file).collect(Collectors.joining("\n")));
+        final JSONObject installations = statsJson.getJSONObject("installations");
+        final JSONObject installationsPercentage = statsJson.getJSONObject("installationsPercentage");
+        final JSONObject installationsPerVersion = statsJson.getJSONObject("installationsPerVersion");
+        final JSONObject installationsPercentagePerVersion = statsJson.getJSONObject("installationsPercentagePerVersion");
+        stats.setInstallations(installations.keySet().stream().map((timestamp) ->
+          new Installation(
+            Long.valueOf(timestamp),
+            installations.getInt(timestamp)
+          )
+        ).sorted(Comparator.comparingLong(Installation::getTimestamp)) .collect(Collectors.toList()));
+        stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) ->
+          new InstallationPercentage(
+            Long.valueOf(timestamp),
+            installationsPercentage.getDouble(timestamp)
+          )
+        ).sorted(Comparator.comparing(InstallationPercentage::getTimestamp)).collect(Collectors.toList()));
+        stats.setInstallationsPerVersion(installationsPerVersion.keySet().stream().map((version) ->
+          new InstallationVersion(
+            version,
+            installationsPerVersion.getInt(version)
+          )
+        ).sorted(Comparator.comparing(InstallationVersion::getVersion)).collect(Collectors.toList()));
+        stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map((version) ->
+          new InstallationPercentageVersion(
+            version,
+            installationsPercentagePerVersion.getDouble(version)
+          )
+        ).sorted(Comparator.comparing(InstallationPercentageVersion::getVersion)).collect(Collectors.toList()));
+        stats.setCurrentInstalls(!stats.getInstallations().isEmpty() ? stats.getInstallations().get(stats.getInstallations().size()-1).getTotal() : 0);
+        if (stats.getInstallations().size() > 1) {
+          final int size = stats.getInstallations().size();
+          final long trend = stats.getInstallations().get(size-1).getTotal() - stats.getInstallations().get(size-2).getTotal();
+          stats.setTrend(trend);
+        }
+      } else {
+        logger.warn(String.format("No statistics available for %s", name));
+      }
+      return stats;
+    } catch (Exception e) {
+      logger.error(String.format("Problem parsing statistics for %s", name), e);
       throw new RuntimeException(e);
     }
   }

@@ -13,6 +13,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * <p>Endpoint for retrieving unique categories</p>
+ *
+ * <p>Used for category filtering</p>
+ */
 @Path("/categories")
 @Produces(MediaType.APPLICATION_JSON)
 public class CategoriesEndpoint {

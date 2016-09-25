@@ -1,5 +1,8 @@
 package io.jenkins.plugins.services;
 
+/**
+ * <p>Enum specifying sorting search results</p>
+ */
 public enum SortBy {
 
   INSTALLED,

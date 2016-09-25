@@ -13,6 +13,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * <p>Endpoint for retrieving unique labels</p>
+ *
+ * <p>Used for label filtering</p>
+ */
 @Path("/labels")
 @Produces(MediaType.APPLICATION_JSON)
 public class LabelsEndpoint {

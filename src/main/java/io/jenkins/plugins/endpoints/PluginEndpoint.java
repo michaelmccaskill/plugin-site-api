@@ -12,6 +12,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * <p>Endpoint for a specific plugin</p>
+ *
+ * <p>The major difference here compared to <code>PluginsEndpoint</code> is the result includes (if available) the wiki
+ * content from the Jenkins Wiki page.</p>
+ */
 @Path("/plugin/{name}")
 @Produces(MediaType.APPLICATION_JSON)
 public class PluginEndpoint {
@@ -24,6 +30,12 @@ public class PluginEndpoint {
   @Inject
   private WikiService wikiService;
 
+  /**
+   * <p>Get a plugin by name</p>
+   *
+   * @param name The plugin to retrieve
+   * @return Matching plugin
+   */
   @GET
   public Plugin getPlugin(@PathParam("name") String name) {
     try {

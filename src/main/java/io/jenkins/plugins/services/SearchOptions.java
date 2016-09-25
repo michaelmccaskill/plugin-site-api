@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * <p>Container for search options</p>
+ */
 public class SearchOptions {
 
   private String query;

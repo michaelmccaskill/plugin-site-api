@@ -13,6 +13,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * <p>Endpoint for retrieving unique requiredCore versions</p>
+ *
+ * <p>Used for requiredCore filtering</p>
+ */
 @Path("/versions")
 @Produces(MediaType.APPLICATION_JSON)
 public class VersionsEndpoint {

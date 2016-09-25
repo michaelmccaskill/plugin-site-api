@@ -5,6 +5,18 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 import javax.inject.Singleton;
 
+/**
+ * <p>Binder for the data tier</p>
+ *
+ * <p>Binds</p>
+ * <ul>
+ *   <li><code>EmbeddedElasticsearchServer</code> to itself as a <code>Singleton</code></li>
+ *   <li><code>ElasticsearchClientFactory</code> to <code>Client</code> as a <code>Singleton</code></li>
+ * </ul>
+ *
+ * @see ElasticsearchClientFactory
+ * @see EmbeddedElasticsearchServer
+ */
 public class Binder extends AbstractBinder {
 
   @Override

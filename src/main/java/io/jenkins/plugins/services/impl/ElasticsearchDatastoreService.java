@@ -27,6 +27,11 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.*;
 
+/**
+ * <p>Implementation of <code>DatastoreService</code> powered by Elasticsearch</p>
+ *
+ * @see io.jenkins.plugins.datastore.ElasticsearchClientFactory
+ */
 public class ElasticsearchDatastoreService implements DatastoreService {
 
   private Logger logger = LoggerFactory.getLogger(ElasticsearchDatastoreService.class);

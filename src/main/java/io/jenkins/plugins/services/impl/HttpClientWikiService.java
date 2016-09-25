@@ -24,6 +24,11 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * <p>Implementation of <code>WikiService</code> powered by <code>HttpClient</code></p>
+ *
+ * <p>For performance reasons the content for a plugin url is cached using a <code>LoadingCache</code> for 6 hours</p>
+ */
 public class HttpClientWikiService implements WikiService {
 
   private Logger logger = LoggerFactory.getLogger(HttpClientWikiService.class);
@@ -38,6 +43,7 @@ public class HttpClientWikiService implements WikiService {
       .build(new CacheLoader<String, String>() {
         @Override
         public String load(String url) throws Exception {
+          // Load the wiki content then clean it
           final String rawContent = startGetWikiContent(url);
           return cleanWikiContent(url, rawContent);
         }
@@ -48,6 +54,7 @@ public class HttpClientWikiService implements WikiService {
   public String getWikiContent(String url) throws ServiceException {
     if (url != null && !url.trim().isEmpty()) {
       try {
+        // This is what fires the CacheLoader that's defined in the postConstruct.
         return wikiContentCache.get(url);
       } catch (ExecutionException e) {
         logger.error("Problem getting wiki content", e);
@@ -119,8 +126,10 @@ public class HttpClientWikiService implements WikiService {
       return null;
     }
     final Element wikiContent = elements.first();
+    // Replace href/src with the wiki url
     wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href", url));
     wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src", url));
+    // This removes specific Confluence elements not needed by the front end
     wikiContent.getElementsByClass("table-wrap").remove();
     return wikiContent.html();
   }
