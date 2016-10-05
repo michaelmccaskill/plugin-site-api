@@ -2,13 +2,8 @@ package io.jenkins.plugins.datastore;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.Plugin;
+import io.jenkins.plugins.services.ConfigurationService;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -24,12 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.*;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Copied and modified from:
@@ -45,6 +40,9 @@ public class EmbeddedElasticsearchServer {
   public Client getClient() {
     return node.client();
   }
+
+  @Inject
+  private ConfigurationService configurationService;
 
   @PostConstruct
   public void postConstruct() {
@@ -75,41 +73,15 @@ public class EmbeddedElasticsearchServer {
 
   private void createAndPopulateIndex() {
     try {
-      final String dataFile = retrieveDataFile();
-      reIndex(dataFile);
+      final String data = configurationService.getIndexData();
+      reIndex(data);
     } catch (Exception e) {
       logger.error("Problem creating and populating index", e);
       throw new RuntimeException("Problem creating and populating index", e);
     }
   }
 
-  private String retrieveDataFile() {
-    final CloseableHttpClient httpClient = HttpClients.createDefault();
-    try {
-      final String url = "http://localhost:8089/plugins.json.gzip";
-      final HttpGet get = new HttpGet(url);
-      final CloseableHttpResponse response = httpClient.execute(get);
-      if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-        final HttpEntity entity = response.getEntity();
-        final InputStream inputStream = entity.getContent();
-        final File dataFile = File.createTempFile("plugins", ".json.gzip");
-        FileUtils.copyToFile(inputStream, dataFile);
-        return readGzipFile(dataFile);
-      } else {
-        logger.error("Data file not found");
-        throw new RuntimeException("Data file not found");
-      }
-    } catch (Exception e) {
-      logger.error("Problem getting data file", e);
-      throw new RuntimeException("Problem getting data file", e);
-    } finally {
-      try {
-        httpClient.close();
-      } catch (IOException e) {
-        logger.warn("Problem closing HttpClient", e);
-      }
-    }
-  }
+
 
   private void reIndex(String data) {
     final ClassLoader cl = getClass().getClassLoader();
@@ -149,13 +121,6 @@ public class EmbeddedElasticsearchServer {
     }
   }
 
-  private String readGzipFile(final File file) {
-    try(final BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), "utf-8"))) {
-      return reader.lines().collect(Collectors.joining());
-    } catch (Exception e) {
-      logger.error("Problem decompressing plugin data", e);
-      throw new RuntimeException("Problem decompressing plugin data", e);
-    }
-  }
+
 
 }

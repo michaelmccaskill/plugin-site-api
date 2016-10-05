@@ -1,13 +1,17 @@
 package io.jenkins.plugins.services;
 
 import io.jenkins.plugins.models.*;
+import io.jenkins.plugins.services.impl.ElasticsearchDatastoreService;
+import io.jenkins.plugins.services.impl.HttpClientWikiService;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -22,7 +26,14 @@ public class DatastoreServiceIntegrationTest {
   public static void setUp() throws Exception {
     locator  = ServiceLocatorUtilities.bind(
       new io.jenkins.plugins.datastore.Binder(),
-      new io.jenkins.plugins.services.Binder());
+      new AbstractBinder() {
+        @Override
+        protected void configure() {
+          bind(MockConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
+          bind(ElasticsearchDatastoreService.class).to(DatastoreService.class).in(Singleton.class);
+          bind(HttpClientWikiService.class).to(WikiService.class).in(Singleton.class);
+        }
+      });
     datastoreService = locator.getService(DatastoreService.class);
   }
 
