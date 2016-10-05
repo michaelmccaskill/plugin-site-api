@@ -253,7 +253,7 @@ public class GeneratePluginData {
   }
 
   private void writePluginsToFile(List<Plugin> plugins) {
-    final File data = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "elasticsearch", "data", "plugins.json.gzip").toFile();
+    final File data = Paths.get(System.getProperty("user.dir"), "target", "plugins.json.gzip").toFile();
     try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), "utf-8"))) {
       JsonObjectMapper.getObjectMapper().writeValue(writer, plugins);
     } catch (Exception e) {
