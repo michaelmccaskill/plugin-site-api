@@ -1,5 +1,7 @@
 package io.jenkins.plugins.services;
 
+import io.jenkins.plugins.commons.JsonObjectMapper;
+import io.jenkins.plugins.models.GeneratedPluginData;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +13,13 @@ public class MockConfigurationService implements ConfigurationService {
   private final Logger logger = LoggerFactory.getLogger(MockConfigurationService.class);
 
   @Override
-  public String getIndexData() throws ServiceException {
+  public GeneratedPluginData getIndexData() throws ServiceException {
     try {
       logger.info("Using test plugin data");
       final ClassLoader cl = getClass().getClassLoader();
-      final File mappingFile = new File(cl.getResource("plugins.json").getFile());
-      return FileUtils.readFileToString(mappingFile, "utf-8");
+      final File dataFile = new File(cl.getResource("plugins.json").getFile());
+      final String data = FileUtils.readFileToString(dataFile, "utf-8");
+      return JsonObjectMapper.getObjectMapper().readValue(data, GeneratedPluginData.class);
     } catch (Exception e) {
       throw new RuntimeException("Can't get test plugin data");
     }

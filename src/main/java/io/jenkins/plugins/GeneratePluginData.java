@@ -255,7 +255,7 @@ public class GeneratePluginData {
   private void writePluginsToFile(List<Plugin> plugins) {
     final File data = Paths.get(System.getProperty("user.dir"), "target", "plugins.json.gzip").toFile();
     try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), "utf-8"))) {
-      JsonObjectMapper.getObjectMapper().writeValue(writer, plugins);
+      JsonObjectMapper.getObjectMapper().writeValue(writer, new GeneratedPluginData(plugins));
     } catch (Exception e) {
       logger.error("Problem writing plugin data to file", e);
       throw new RuntimeException(e);

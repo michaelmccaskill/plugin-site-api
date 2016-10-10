@@ -1,6 +1,7 @@
 package io.jenkins.plugins.datastore;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
+import io.jenkins.plugins.models.GeneratedPluginData;
 import io.jenkins.plugins.models.Plugin;
 import io.jenkins.plugins.services.ConfigurationService;
 import org.apache.commons.io.FileUtils;
@@ -73,17 +74,15 @@ public class EmbeddedElasticsearchServer {
 
   private void createAndPopulateIndex() {
     try {
-      final String data = configurationService.getIndexData();
-      reIndex(data);
+      final GeneratedPluginData data = configurationService.getIndexData();
+      populateIndex(data);
     } catch (Exception e) {
       logger.error("Problem creating and populating index", e);
       throw new RuntimeException("Problem creating and populating index", e);
     }
   }
 
-
-
-  private void reIndex(String data) {
+  private void populateIndex(GeneratedPluginData data) {
     final ClassLoader cl = getClass().getClassLoader();
     final String index = String.format("plugins_%s", DateTimeFormatter.ofPattern("yyyy.mm.dd_HH.mm.ss").format(LocalDateTime.now()));
     try {
@@ -94,16 +93,16 @@ public class EmbeddedElasticsearchServer {
         .addMapping("plugins", mappingContent)
         .get();
       logger.info(String.format("Index '%s' created", index));
-      final JSONArray json = new JSONArray(data);
       final BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
-      for (int i = 0; i < json.length(); i++) {
-        // Seems redundant but it's actually a good test to ensure the generation process is working. If we can read
-        // a plugin from the JSON then it's good.
-        final Plugin plugin = JsonObjectMapper.getObjectMapper().readValue(json.getJSONObject(i).toString(), Plugin.class);
-        final IndexRequest indexRequest = client.prepareIndex(index, "plugins", plugin.getName())
-          .setSource(JsonObjectMapper.getObjectMapper().writeValueAsString(plugin)).request();
-        bulkRequestBuilder.add(indexRequest);
-      }
+      data.getPlugins().forEach((plugin) -> {
+        try {
+          final IndexRequest indexRequest = client.prepareIndex(index, "plugins", plugin.getName())
+            .setSource(JsonObjectMapper.getObjectMapper().writeValueAsString(plugin)).request();
+          bulkRequestBuilder.add(indexRequest);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
       final BulkResponse response = bulkRequestBuilder.get();
       if (response.hasFailures()) {
         for (BulkItemResponse item : response.getItems()) {
@@ -111,7 +110,7 @@ public class EmbeddedElasticsearchServer {
         }
         throw new ElasticsearchException("Problem bulk indexing");
       }
-      logger.info(String.format("Indexed %d plugins", json.length()));
+      logger.info(String.format("Indexed %d plugins", data.getPlugins().size()));
       client.admin().indices().prepareAliases().addAlias(index, "plugins").get();
       client.admin().indices().prepareRefresh("plugins").execute().get();
       logger.info(String.format("Alias plugins points to index %s", index));

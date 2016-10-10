@@ -1,5 +1,7 @@
 package io.jenkins.plugins.services.impl;
 
+import io.jenkins.plugins.commons.JsonObjectMapper;
+import io.jenkins.plugins.models.GeneratedPluginData;
 import io.jenkins.plugins.services.ConfigurationService;
 import io.jenkins.plugins.services.ServiceException;
 import org.apache.commons.io.FileUtils;
@@ -25,7 +27,7 @@ public class DefaultConfigurationService implements ConfigurationService {
   private final Logger logger = LoggerFactory.getLogger(DefaultConfigurationService.class);
 
   @Override
-  public String getIndexData() throws ServiceException {
+  public GeneratedPluginData getIndexData() throws ServiceException {
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     try {
       final String url = getDataFileUrl();
@@ -36,7 +38,8 @@ public class DefaultConfigurationService implements ConfigurationService {
         final InputStream inputStream = entity.getContent();
         final File dataFile = File.createTempFile("plugins", ".json.gzip");
         FileUtils.copyToFile(inputStream, dataFile);
-        return readGzipFile(dataFile);
+        final String data = readGzipFile(dataFile);
+        return JsonObjectMapper.getObjectMapper().readValue(data, GeneratedPluginData.class);
       } else {
         logger.error("Data file not found");
         throw new RuntimeException("Data file not found");
