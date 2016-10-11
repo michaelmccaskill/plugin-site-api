@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Copied and modified from:
@@ -49,6 +51,9 @@ public class EmbeddedElasticsearchServer {
   @Inject
   private ConfigurationService configurationService;
 
+  @Inject
+  private ScheduledExecutorService scheduledExecutorService;
+
   @PostConstruct
   public void postConstruct() {
     logger.info("Initialize elasticsearch");
@@ -64,7 +69,8 @@ public class EmbeddedElasticsearchServer {
       .build();
     node = NodeBuilder.nodeBuilder().local(true).settings(settings).build();
     node.start();
-    createAndPopulateIndex();
+    populateIndex();
+    scheduledExecutorService.scheduleWithFixedDelay(() -> populateIndex(), 12, 12, TimeUnit.HOURS);
     logger.info("Initializing elasticsearch done");
   }
 
@@ -76,17 +82,17 @@ public class EmbeddedElasticsearchServer {
     FileUtils.deleteQuietly(tempDir);
   }
 
-  private void createAndPopulateIndex() {
+  private void populateIndex() {
     try {
       final GeneratedPluginData data = configurationService.getIndexData();
-      populateIndex(data);
+      doPopulateIndex(data);
     } catch (Exception e) {
-      logger.error("Problem creating and populating index", e);
-      throw new RuntimeException("Problem creating and populating index", e);
+      logger.error("Problem populating index", e);
+      throw new RuntimeException("Problem populating index", e);
     }
   }
 
-  private void populateIndex(GeneratedPluginData data) {
+  private void doPopulateIndex(GeneratedPluginData data) {
     final Optional<LocalDateTime> optCreatedAt = getCurrentCreatedAt();
     if (optCreatedAt.isPresent()) {
       final LocalDateTime createdAt = optCreatedAt.get();
