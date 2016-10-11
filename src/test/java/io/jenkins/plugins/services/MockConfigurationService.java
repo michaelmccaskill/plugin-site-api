@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+/**
+ * <p>Mocked ConfigurationService</p>
+ */
 public class MockConfigurationService implements ConfigurationService {
 
   private final Logger logger = LoggerFactory.getLogger(MockConfigurationService.class);

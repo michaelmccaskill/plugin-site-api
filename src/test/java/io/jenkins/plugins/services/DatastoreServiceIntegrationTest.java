@@ -10,25 +10,31 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class DatastoreServiceIntegrationTest {
 
   private static ServiceLocator locator;
   private static DatastoreService datastoreService;
 
+  private static ScheduledExecutorService mockScheduledExecutorService;
+
   // BeforeClass because there's no reason to start/stop Elasticsearch for every test when
   // all our operations are read-only
   @BeforeClass
   public static void setUp() throws Exception {
+    mockScheduledExecutorService = Mockito.mock(ScheduledExecutorService.class);
     locator  = ServiceLocatorUtilities.bind(
       new io.jenkins.plugins.datastore.Binder(),
       new AbstractBinder() {
         @Override
         protected void configure() {
+          bind(mockScheduledExecutorService.getClass()).to(ScheduledExecutorService.class).in(Singleton.class);
           bind(MockConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
           bind(ElasticsearchDatastoreService.class).to(DatastoreService.class).in(Singleton.class);
           bind(HttpClientWikiService.class).to(WikiService.class).in(Singleton.class);
