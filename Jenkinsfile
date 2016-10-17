@@ -42,7 +42,7 @@ node('docker') {
 
                 /** archive all our artifacts for reporting later */
                 junit 'target/surefire-reports/**/*.xml'
-                archiveArtifacts archives: 'target/**/*.war', fingerprint: true
+                archiveArtifacts archives: 'target/*.war', fingerprint: true
             }
 
             /*
@@ -64,13 +64,9 @@ node('docker') {
              * calls against it before calling it successful
              */
             stage('Verify Container') {
-                withEnv([
-                    'DATA_FILE_URL=http://nginx/plugins.json.gzip',
-                ]) {
-                    container.withRun("--link ${c.id}:nginx -e DATA_FILE_URL=http://nginx/plugins.json.gzip") { api ->
-                        docker.image('maven').inside("--link ${api.id}:api") {
-                            sh 'curl -v http://api:8080/versions'
-                        }
+                container.withRun("--link ${c.id}:nginx -e DATA_FILE_URL=http://nginx/plugins.json.gzip") { api ->
+                    docker.image('maven').inside("--link ${api.id}:api") {
+                        sh 'curl -v http://api:8080/versions'
                     }
                 }
             }
