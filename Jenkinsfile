@@ -4,10 +4,14 @@
 properties([[$class: 'jenkins.model.BuildDiscarderProperty',
                 strategy: [$class: 'LogRotator', numToKeepStr: '10']]])
 
+def isPullRequest = !!(env.CHANGE_ID)
+
 node('docker') {
-    checkout scm
-    sh 'git rev-parse HEAD > GIT_COMMIT'
-    String shortCommit = readFile('GIT_COMMIT').take(6)
+    stage('Checkout') {
+        checkout scm
+        sh 'git rev-parse HEAD > GIT_COMMIT'
+        String shortCommit = readFile('GIT_COMMIT').take(6)
+    }
 
     timestamps {
         stage('Generate Plugin Data') {
@@ -50,6 +54,9 @@ node('docker') {
             stage('Containerize') {
                 container = docker.build("jenkinsciinfra/plugin-site:${shortCommit}",
                                         '--no-cache --rm .')
+                if (!isPullRequest) {
+                    container.push()
+                }
             }
 
             /*
@@ -65,6 +72,12 @@ node('docker') {
                             sh 'curl -v http://api:8080/versions'
                         }
                     }
+                }
+            }
+
+            stage('Tag container as latest') {
+                if (!isPullRequest) {
+                    container.push('latest')
                 }
             }
         }
