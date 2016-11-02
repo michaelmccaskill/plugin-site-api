@@ -6,12 +6,18 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty',
 
 def isPullRequest = !!(env.CHANGE_ID)
 def isMultibranch = !!(env.BRANCH_NAME)
+String shortCommit = ''
 
 node('docker') {
     stage('Checkout') {
         checkout scm
         sh 'git rev-parse HEAD > GIT_COMMIT'
-        String shortCommit = readFile('GIT_COMMIT').take(6)
+        shortCommit = readFile('GIT_COMMIT').take(6)
+
+        dir('deploy') {
+            echo 'Cloning the latest front-end site for baking our container'
+            git 'https://github.com/jenkins-infra/plugin-site.git'
+        }
     }
 
     timestamps {
@@ -38,6 +44,10 @@ node('docker') {
                         'DATA_FILE_URL=http://nginx/plugins.json.gzip',
                     ]) {
                         sh 'mvn -B -Dmaven.test.failure.ignore verify'
+                        /* Copy our war file into the deploy directory for easy
+                         * COPYing into our container
+                         */
+                        sh 'cp target/*.war deploy'
                     }
                 }
 

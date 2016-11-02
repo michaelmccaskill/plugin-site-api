@@ -6,7 +6,7 @@ RUN apk update && apk add supervisor nodejs
 
 
 # Bring our Java backend app over for Jetty
-COPY ../target/*.war /var/lib/jetty/webapps/ROOT.war
+COPY *.war /var/lib/jetty/webapps/ROOT.war
 
 # Bring our supervisor configuration for supervisord
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
