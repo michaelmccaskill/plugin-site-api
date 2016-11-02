@@ -2,7 +2,7 @@
 
 /* Only keep the 10 most recent builds. */
 properties([[$class: 'jenkins.model.BuildDiscarderProperty',
-                strategy: [$class: 'LogRotator', numToKeepStr: '10']]])
+                strategy: [$class: 'LogRotator', numToKeepStr: '5']]])
 
 def isPullRequest = !!(env.CHANGE_ID)
 def isMultibranch = !!(env.BRANCH_NAME)

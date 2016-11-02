@@ -684,3 +684,28 @@ Sample Response
 }
 
 ----
+
+== Deployment to production
+
+This project is containerized via the `Dockerfile` that is located in the
+`deploy/` directory. The `Jenkinsfile` uses this `Dockerfile` in conjunction
+with the front-end code located in the
+link:https://github.com/jenkins-infra/plugin-site[jenkins-infra/plugin-site]
+repository to create a container fit for deployment.
+
+Unfortunately, the build of this container must occur on a Jenkins cluster
+which is publicly inaccessible for security reasons. The private job polls SCM
+every 10 minutes.
+
+Deploying:
+
+. Have code merged to the master branch of this repository
+. Wait pateiently 10-15 minutes (coffee time!)
+. Verify that a new container tag has been published
+  link:https://hub.docker.com/r/jenkinsciinfra/plugin-site/tags/[here].
+. Submit a pull request to the
+  link:https://github.com/jenkins-infra/jenkins-infra[jenkins-infra/jenkins-infra]
+  repository updating the `profile::pluginsite::image_tag` value to the latest
+  container's tag
+  (link:https://github.com/jenkins-infra/jenkins-infra/blob/bbfad9c04d5233d322a9e61aa9ab38890ab9991a/hieradata/common.yaml#L246[here])
+. Once that is merged the changes will be live
