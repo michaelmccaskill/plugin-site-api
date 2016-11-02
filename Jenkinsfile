@@ -5,6 +5,7 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty',
                 strategy: [$class: 'LogRotator', numToKeepStr: '10']]])
 
 def isPullRequest = !!(env.CHANGE_ID)
+def isMultibranch = !!(env.BRANCH_NAME)
 
 node('docker') {
     stage('Checkout') {
@@ -52,9 +53,9 @@ node('docker') {
              */
             def container
             stage('Containerize') {
-                container = docker.build("jenkinsciinfra/plugin-site:${shortCommit}",
+                container = docker.build("jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}",
                                         '--no-cache --rm deploy')
-                if (!isPullRequest) {
+                if (!(isPullRequest || isMultibranch)) {
                     container.push()
                 }
             }
@@ -72,7 +73,7 @@ node('docker') {
             }
 
             stage('Tag container as latest') {
-                if (!isPullRequest) {
+                if (!(isPullRequest || isMultibranch)) {
                     container.push('latest')
                 }
             }
