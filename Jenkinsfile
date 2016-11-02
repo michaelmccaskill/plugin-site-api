@@ -17,7 +17,7 @@ node('docker') {
         sh 'git rev-parse HEAD > GIT_COMMIT'
         shortCommit = readFile('GIT_COMMIT').take(6)
 
-        dir('deploy') {
+        dir('deploy/plugin-site') {
             echo 'Cloning the latest front-end site for baking our container'
             git 'https://github.com/jenkins-infra/plugin-site.git'
         }
@@ -76,13 +76,11 @@ node('docker') {
              * Spin up our built container and make sure we can execute API
              * calls against it before calling it successful
              */
-            // XXX: Disabled until I can identify why the inner wget cannot
-            // connect to port 8080
-            //stage('Verify Container') {
-            //    container.withRun("--link ${c.id}:nginx -e DATA_FILE_URL=http://nginx/plugins.json.gzip -p 8080:8080") { api ->
-            //        sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 http://127.0.0.1:8080/versions'
-            //    }
-            //}
+            stage('Verify Container') {
+                container.withRun("--link ${c.id}:nginx -e DATA_FILE_URL=http://nginx/plugins.json.gzip -p 8080:8080") { api ->
+                    sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 http://127.0.0.1:8080/versions'
+                }
+            }
 
             stage('Tag container as latest') {
                 if (!(isPullRequest || isMultibranch)) {
