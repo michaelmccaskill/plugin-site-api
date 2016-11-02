@@ -53,7 +53,6 @@ node('docker') {
 
                 /** archive all our artifacts for reporting later */
                 junit 'target/surefire-reports/**/*.xml'
-                archiveArtifacts archives: 'target/*.war', fingerprint: true
             }
 
             /*
