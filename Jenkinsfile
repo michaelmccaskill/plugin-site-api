@@ -88,5 +88,9 @@ node('docker') {
                 }
             }
         }
+
+        stage('Archive Artifacts') {
+            archiveArtifacts artifacts: 'target/*.war, target/*.json.gzip', fingerprint: true
+        }
     }
 }
