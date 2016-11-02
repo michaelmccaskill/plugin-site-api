@@ -53,7 +53,7 @@ node('docker') {
             def container
             stage('Containerize') {
                 container = docker.build("jenkinsciinfra/plugin-site:${shortCommit}",
-                                        '--no-cache --rm .')
+                                        '--no-cache --rm deploy')
                 if (!isPullRequest) {
                     container.push()
                 }
