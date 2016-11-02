@@ -9,6 +9,9 @@ def isMultibranch = !!(env.BRANCH_NAME)
 String shortCommit = ''
 
 node('docker') {
+    /* Make sure we're always starting with a fresh workspace */
+    deleteDir()
+
     stage('Checkout') {
         checkout scm
         sh 'git rev-parse HEAD > GIT_COMMIT'
