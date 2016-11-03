@@ -138,8 +138,6 @@ public class HttpClientWikiService implements WikiService {
     final String attribute = element.attr(attributeName);
     if (attribute.startsWith("/")) {
       element.attr(attributeName, "https://wiki.jenkins-ci.org" + attribute);
-    } else if (attribute.startsWith("#")) {
-      element.attr(attributeName, url + "/" + attribute);
     }
   }
 
