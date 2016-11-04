@@ -77,8 +77,13 @@ node('docker') {
              * calls against it before calling it successful
              */
             stage('Verify Container') {
-                container.withRun("--link ${c.id}:nginx -e DATA_FILE_URL=http://nginx/plugins.json.gzip -p 8080:8080") { api ->
-                    sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 http://127.0.0.1:8080/versions'
+                container.withRun("--link ${c.id}:nginx -e DATA_FILE_URL=http://nginx/plugins.json.gzip") { api ->
+                    /* Re-using the `maven` image because it happens to have a
+                     * proper wget installed already inside of it
+                     */
+                    docker.image('maven').inside("--link ${api.id}:api") {
+                        sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 http://api:8080/versions'
+                    }
                 }
             }
 
