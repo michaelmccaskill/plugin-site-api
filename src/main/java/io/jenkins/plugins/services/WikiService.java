@@ -17,11 +17,10 @@ public interface WikiService {
   /**
    * <p>Clean wiki content so it's presentable to the UI</p>
    *
-   * @param url URL to the wiki content
    * @param content Wiki content
    * @return cleaned content
    * @throws ServiceException in case something goes wrong
    */
-  String cleanWikiContent(String url, String content) throws ServiceException;
+  String cleanWikiContent(String content) throws ServiceException;
 
 }

@@ -4,6 +4,7 @@ import io.jenkins.plugins.services.impl.HttpClientWikiService;
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,21 +32,28 @@ public class WikiServiceTest {
 
   @Test
   public void testCleanWikiContent() throws IOException {
-    final String url = "https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin";
     final File file = new File("src/test/resources/wiki_content.html");
     final String content = FileUtils.readFileToString(file, "utf-8");
-    final String cleanContent = wikiService.cleanWikiContent(url, content);
+    final String cleanContent = wikiService.cleanWikiContent(content);
     Assert.assertNotNull("Wiki content is null", cleanContent);
-    final Document html = Jsoup.parse(content);
+    final Document html = Jsoup.parseBodyFragment(cleanContent);
     html.getElementsByAttribute("href").forEach((element) -> {
       final String value = element.attr("href");
-      Assert.assertFalse("Wiki content not clean - href references to root or hash", value.startsWith("/") && value.startsWith("#"));
+      Assert.assertFalse("Wiki content not clean - href references to root : " + value, value.startsWith("/"));
     });
-    html.getElementsByAttribute("href").forEach((element) -> {
+    html.getElementsByAttribute("src").forEach((element) -> {
       final String value = element.attr("src");
-      Assert.assertFalse("Wiki content not clean - src references to root", value.startsWith("/"));
+      Assert.assertFalse("Wiki content not clean - src references to root : " + value, value.startsWith("/"));
     });
-    Assert.assertTrue("Wiki content not clean - references to table-wrap", html.getElementsByAttributeValue("class", "tabke-wrap").size() == 0);
+    Assert.assertTrue("Wiki content not clean - references to table-wrap", html.getElementsByClass("table-wrap").isEmpty());
+  }
+
+  @Test
+  public void testReplaceAttribute() throws IOException {
+    final String src = "/some-image.jpg";
+    final Element element = Jsoup.parseBodyFragment(String.format("<img id=\"test-image\" src=\"%s\"/>", src)).getElementById("test-image");
+    wikiService.replaceAttribute(element, "src");
+    Assert.assertEquals("Attribute replacement failed", HttpClientWikiService.WIKI_URL + src, element.attr("src"));
   }
 
 }
