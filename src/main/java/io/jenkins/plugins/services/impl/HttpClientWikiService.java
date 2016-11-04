@@ -35,6 +35,8 @@ public class HttpClientWikiService implements WikiService {
 
   private LoadingCache<String, String> wikiContentCache;
 
+  public static final String WIKI_URL = "https://wiki.jenkins-ci.org";
+
   @PostConstruct
   public void postConstruct() {
     wikiContentCache = CacheBuilder.newBuilder()
@@ -45,7 +47,7 @@ public class HttpClientWikiService implements WikiService {
         public String load(String url) throws Exception {
           // Load the wiki content then clean it
           final String rawContent = startGetWikiContent(url);
-          return cleanWikiContent(url, rawContent);
+          return cleanWikiContent(rawContent);
         }
       });
   }
@@ -114,7 +116,7 @@ public class HttpClientWikiService implements WikiService {
   }
 
   @Override
-  public String cleanWikiContent(String url, String content) throws ServiceException {
+  public String cleanWikiContent(String content) throws ServiceException {
     if (content == null || content.trim().isEmpty()) {
       logger.warn("Can't clean null content");
       return null;
@@ -126,20 +128,18 @@ public class HttpClientWikiService implements WikiService {
       return null;
     }
     final Element wikiContent = elements.first();
-    // Replace href/src with the wiki url
-    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href", url));
-    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src", url));
     // This removes specific Confluence elements not needed by the front end
     wikiContent.getElementsByClass("table-wrap").remove();
+    // Replace href/src with the wiki url
+    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href"));
+    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src"));
     return wikiContent.html();
   }
 
-  private void replaceAttribute(Element element, String attributeName, String url) {
+  public void replaceAttribute(Element element, String attributeName) {
     final String attribute = element.attr(attributeName);
     if (attribute.startsWith("/")) {
-      element.attr(attributeName, "https://wiki.jenkins-ci.org" + attribute);
-    } else if (attribute.startsWith("#")) {
-      element.attr(attributeName, url + "/" + attribute);
+      element.attr(attributeName, WIKI_URL + attribute);
     }
   }
 
