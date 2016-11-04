@@ -1,8 +1,10 @@
 #!/usr/bin/env groovy
 
 /* Only keep the 10 most recent builds. */
-properties([[$class: 'jenkins.model.BuildDiscarderProperty',
-                strategy: [$class: 'LogRotator', numToKeepStr: '5']]])
+properties([
+    [$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']],
+    pipelineTriggers([[$class:"SCMTrigger", scmpoll_spec:"H/10 * * * *"]]),
+])
 
 def isPullRequest = !!(env.CHANGE_ID)
 def isMultibranch = !!(env.BRANCH_NAME)
