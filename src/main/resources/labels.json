@@ -1,5 +1,5 @@
 {
-  "labels": 
+  "labels":
   [
     {
       "id": "ios",
@@ -19,11 +19,6 @@
     {
       "id": "ruby",
       "title": "Ruby development"
-    },
-
-    {
-      "id": "scala",
-      "title": "Scala plugins"
     },
 
     {
