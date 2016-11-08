@@ -9,6 +9,9 @@ public class Dependency {
   @JsonProperty("name")
   private String name;
 
+  @JsonProperty("title")
+  private String title;
+
   @JsonProperty("optional")
   private boolean optional;
 
@@ -18,8 +21,9 @@ public class Dependency {
   public Dependency() {
   }
 
-  public Dependency(String name, boolean optional, String version) {
+  public Dependency(String name, String title, boolean optional, String version) {
     this.name = name;
+    this.title = title;
     this.optional = optional;
     this.version = version;
   }
@@ -30,6 +34,14 @@ public class Dependency {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
   }
 
   public boolean isOptional() {
