@@ -113,10 +113,11 @@ public class GeneratePluginData {
   private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath) {
     try {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
+      final Map<String, String> dependencyNameToTitleMap = buildDependencyNameToTitleMap(pluginsJson);
       final List<Plugin> plugins = new ArrayList<>();
       for (String key : pluginsJson.keySet()) {
         final JSONObject json = pluginsJson.getJSONObject(key);
-        final Plugin plugin = parsePlugin(json, statisticsPath, labelToCategoryMap);
+        final Plugin plugin = parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap);
         plugins.add(plugin);
       }
       return plugins;
@@ -126,7 +127,7 @@ public class GeneratePluginData {
     }
   }
 
-  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap) {
+  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap, Map<String, String> dependencyNameToTitleMap) {
     final Plugin plugin = new Plugin();
     plugin.setExcerpt(json.optString("excerpt", null));
     plugin.setGav(json.optString("gav", null));
@@ -158,8 +159,11 @@ public class GeneratePluginData {
     if (dependenciesJson != null) {
       for (int i = 0; i < dependenciesJson.length(); i++) {
         final JSONObject dependencyJson = dependenciesJson.getJSONObject(i);
+        final String name = dependencyJson.getString("name");
+        final String title = dependencyNameToTitleMap.getOrDefault(name, name);
         final Dependency dependency = new Dependency(
-          dependencyJson.optString("name", null),
+          name,
+          title,
           dependencyJson.optBoolean("optional", false),
           dependencyJson.optString("version", null)
         );
@@ -284,6 +288,15 @@ public class GeneratePluginData {
     } catch (JSONException e) {
       return Collections.emptyMap();
     }
+  }
+
+  private Map<String, String> buildDependencyNameToTitleMap(JSONObject pluginsJson) {
+    final Map<String, String> result = new HashMap<>();
+    for (String key : pluginsJson.keySet()) {
+      final JSONObject plugin = pluginsJson.getJSONObject(key);
+      result.put(plugin.getString("name"), plugin.getString("title"));
+    }
+    return result;
   }
 
 }
