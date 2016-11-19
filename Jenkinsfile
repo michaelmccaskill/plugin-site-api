@@ -16,7 +16,7 @@ node('docker') {
         git 'https://github.com/jenkins-infra/plugin-site-api.git'
     }
 
-    stage ('Generate') {
+    stage('Generate') {
         timestamps {
             docker.image('maven').inside {
                 sh 'mvn -PgeneratePluginData'
@@ -24,7 +24,9 @@ node('docker') {
         }
     }
 
-    stage ('Archive') {
-        archiveArtifacts artifacts: 'target/*.json.gzip', fingerprint: true
+    stage('Archive') {
+        dir('target') {
+            archiveArtifacts artifacts: 'plugins.json.gzip', fingerprint: true
+        }
     }
 }
