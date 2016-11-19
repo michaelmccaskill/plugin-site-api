@@ -1,0 +1,5 @@
+= Plugin Site API Data Generation
+
+This branch is set up to periodically run data generation for the plugin site.
+
+See the master branch's README.adoc for more information.
