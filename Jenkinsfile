@@ -4,7 +4,7 @@ properties([
     /* Only keep the most recent builds. */
     buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')),
     /* build regularly */
-    pipelineTriggers([cron('H/10 * * * *')])
+    pipelineTriggers([cron('H/30 * * * *')])
 ])
 
 
