@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -73,7 +74,7 @@ public class DefaultConfigurationService implements ConfigurationService {
   }
 
   private String readGzipFile(final File file) {
-    try(final BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), "utf-8"))) {
+    try(final BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), StandardCharsets.UTF_8))) {
       return reader.lines().collect(Collectors.joining());
     } catch (Exception e) {
       logger.error("Problem decompressing plugin data", e);

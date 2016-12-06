@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,7 +71,7 @@ public class GeneratePluginData {
       final StatusLine status = httpResponse.getStatusLine();
       if (status.getStatusCode() == 200) {
         final HttpEntity entity = httpResponse.getEntity();
-        final String content = EntityUtils.toString(entity);
+        final String content = EntityUtils.toString(entity, StandardCharsets.UTF_8);
         try {
           return new JSONObject(String.join("", content.split("\n")[1])).getJSONObject("plugins");
         } catch (Exception e) {
@@ -258,7 +259,7 @@ public class GeneratePluginData {
 
   private void writePluginsToFile(List<Plugin> plugins) {
     final File data = Paths.get(System.getProperty("user.dir"), "target", "plugins.json.gzip").toFile();
-    try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), "utf-8"))) {
+    try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), StandardCharsets.UTF_8))) {
       JsonObjectMapper.getObjectMapper().writeValue(writer, new GeneratedPluginData(plugins));
     } catch (Exception e) {
       logger.error("Problem writing plugin data to file", e);
@@ -272,7 +273,7 @@ public class GeneratePluginData {
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("categories.json").getFile());
-      categories = new JSONObject(FileUtils.readFileToString(file, "utf-8")).getJSONArray("categories");
+      categories = new JSONObject(FileUtils.readFileToString(file, StandardCharsets.UTF_8)).getJSONArray("categories");
     } catch (Exception e) {
       return Collections.emptyMap();
     }

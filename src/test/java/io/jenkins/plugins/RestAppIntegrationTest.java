@@ -35,6 +35,20 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
+  public void testGetPluginUTF8() {
+    final Plugin plugin = target("/plugin/resource-disposer").request().get(Plugin.class);
+    Assert.assertNotNull("resource-disposer plugin not found", plugin);
+    Assert.assertEquals("resource-disposer", plugin.getName());
+    Assert.assertFalse("Maintainers are empty", plugin.getMaintainers().isEmpty());
+    for (Maintainer maintainer : plugin.getMaintainers()) {
+      if (maintainer.getName().equalsIgnoreCase("Oliver Gondža")) {
+        return;
+      }
+    }
+    Assert.fail("Should have \"Oliver Gondža\" in maintainers");
+  }
+
+  @Test
   public void testGetPlugins() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);

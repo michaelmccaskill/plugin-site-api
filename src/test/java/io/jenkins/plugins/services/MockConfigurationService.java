@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>Mocked ConfigurationService</p>
@@ -21,7 +22,7 @@ public class MockConfigurationService implements ConfigurationService {
       logger.info("Using test plugin data");
       final ClassLoader cl = getClass().getClassLoader();
       final File dataFile = new File(cl.getResource("plugins.json").getFile());
-      final String data = FileUtils.readFileToString(dataFile, "utf-8");
+      final String data = FileUtils.readFileToString(dataFile, StandardCharsets.UTF_8);
       return JsonObjectMapper.getObjectMapper().readValue(data, GeneratedPluginData.class);
     } catch (Exception e) {
       throw new RuntimeException("Can't get test plugin data");

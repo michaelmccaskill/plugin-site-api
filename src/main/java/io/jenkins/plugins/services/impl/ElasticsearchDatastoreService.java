@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -151,7 +152,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("categories.json").getFile());
-      final JSONArray json = new JSONObject(FileUtils.readFileToString(file, "utf-8")).getJSONArray("categories");
+      final JSONArray json = new JSONObject(FileUtils.readFileToString(file, StandardCharsets.UTF_8)).getJSONArray("categories");
       final List<Category> categories = new ArrayList<>();
       for (Object entry : json) {
         final Category category = JsonObjectMapper.getObjectMapper().readValue(entry.toString(), Category.class);
@@ -215,7 +216,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("labels.json").getFile());
-      final JSONArray labels = new JSONObject(FileUtils.readFileToString(file, "utf-8")).getJSONArray("labels");
+      final JSONArray labels = new JSONObject(FileUtils.readFileToString(file, StandardCharsets.UTF_8)).getJSONArray("labels");
       final Map<String, String> result = new HashMap<>();
       for (int i = 0; i < labels.length(); i++) {
         final JSONObject label = labels.getJSONObject(i);

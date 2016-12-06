@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class WikiServiceTest {
 
@@ -33,7 +34,7 @@ public class WikiServiceTest {
   @Test
   public void testCleanWikiContent() throws IOException {
     final File file = new File("src/test/resources/wiki_content.html");
-    final String content = FileUtils.readFileToString(file, "utf-8");
+    final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     final String cleanContent = wikiService.cleanWikiContent(content);
     Assert.assertNotNull("Wiki content is null", cleanContent);
     final Document html = Jsoup.parseBodyFragment(cleanContent);
