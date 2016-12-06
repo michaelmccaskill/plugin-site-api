@@ -21,6 +21,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -108,7 +109,7 @@ public class EmbeddedElasticsearchServer {
     final String index = String.format("%s%s", INDEX_PREFIX, TIMESTAMP_FORMATTER.format(data.getCreatedAt()));
     try {
       final File mappingFile = new File(cl.getResource("elasticsearch/mappings/plugins.json").getFile());
-      final String mappingContent = FileUtils.readFileToString(mappingFile, "utf-8");
+      final String mappingContent = FileUtils.readFileToString(mappingFile, StandardCharsets.UTF_8);
       final Client client = getClient();
       client.admin().indices().prepareCreate(index)
         .addMapping(TYPE, mappingContent)

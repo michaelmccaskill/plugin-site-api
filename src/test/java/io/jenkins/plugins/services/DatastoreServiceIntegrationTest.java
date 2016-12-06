@@ -61,6 +61,20 @@ public class DatastoreServiceIntegrationTest {
   }
 
   @Test
+  public void testGetPluginUTF8() {
+    final Plugin plugin = datastoreService.getPlugin("resource-disposer");
+    Assert.assertNotNull("resource-disposer plugin not found", plugin);
+    Assert.assertEquals("resource-disposer", plugin.getName());
+    Assert.assertFalse("Maintainers are empty", plugin.getMaintainers().isEmpty());
+    for (Maintainer maintainer : plugin.getMaintainers()) {
+      if (maintainer.getName().equalsIgnoreCase("Oliver Gondža")) {
+        return;
+      }
+    }
+    Assert.fail("Should have \"Oliver Gondža\" in maintainers");
+  }
+
+  @Test
   public void testSearch() {
     final Plugins plugins = datastoreService.search(new SearchOptions("git", null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
     Assert.assertNotNull("Search for 'git' is null", plugins);
