@@ -135,7 +135,6 @@ public class GeneratePluginData {
     plugin.setName(json.getString("name"));
     plugin.setPreviousVersion(json.optString("previousVersion", null));
     plugin.setRequiredCore(json.optString("requiredCore"));
-    plugin.setScm(json.optString("scm", null));
     plugin.setSha1(json.optString("sha1", null));
     plugin.setTitle(json.optString("title", null));
     plugin.setUrl(json.optString("url", null));
@@ -203,6 +202,16 @@ public class GeneratePluginData {
     }
     final Stats stats = parseStatistics(plugin.getName(), json, statisticsPath);
     plugin.setStats(stats);
+    if (json.optString("scm", "").endsWith("github.com")) {
+      final String name = plugin.getName().endsWith("-plugin") ? plugin.getName() : plugin.getName() + "-plugin";
+      final String issues = "http://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&reset=true&jqlQuery=project+%3D+JENKINS+AND+status+in+%28Open%2C+%22In+Progress%22%2C+Reopened%29+AND+component+%3D+%27" + name + "%27";
+      final String link = "https://github.com/jenkinsci/" + name;
+      final String baseCompareUrl = String.format("%s/compare/%s-", link, plugin.getName());
+      final String inLatestRelease = String.format("%s%s...%s-%s", baseCompareUrl, plugin.getPreviousVersion(), plugin.getName(), plugin.getVersion());
+      final String sinceLatestRelease = String.format("%s%s...master", baseCompareUrl, plugin.getVersion());
+      final String pullRequests = link + "/pulls";
+      plugin.setScm(new Scm(issues, link, inLatestRelease, sinceLatestRelease, pullRequests));
+    }
     return plugin;
   }
 
