@@ -3,6 +3,7 @@ package io.jenkins.plugins.datastore;
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.GeneratedPluginData;
 import io.jenkins.plugins.services.ConfigurationService;
+import io.jenkins.plugins.utils.VersionUtils;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -104,6 +105,18 @@ public class EmbeddedElasticsearchServer {
         logger.info("Plugin data is already up to date");
         return;
       }
+    }
+    final String mappingVersion = VersionUtils.getMappingVersion();
+    if (data.getMappingVersion() != null && !data.getMappingVersion().equalsIgnoreCase(mappingVersion)) {
+      logger.warn(String.format("Data has mapping version '%s' but application has '%s'", data.getMappingVersion(), mappingVersion));
+      logger.warn("Cannot index with new data. More than likely the application needs to be rebuilt and deployed first");
+      return;
+    }
+    final String elasticsearchVersion = VersionUtils.getElasticsearchVersion();
+    if (data.getElasticsearchVersion() != null && !data.getElasticsearchVersion().equalsIgnoreCase(elasticsearchVersion)) {
+      logger.warn(String.format("Data has Elasticsearch version '%s' but application has '%s'", data.getElasticsearchVersion(), elasticsearchVersion));
+      logger.warn("Cannot index with new data. More than likely the application needs to be rebuilt and deployed first");
+      return;
     }
     final ClassLoader cl = getClass().getClassLoader();
     final String index = String.format("%s%s", INDEX_PREFIX, TIMESTAMP_FORMATTER.format(data.getCreatedAt()));
