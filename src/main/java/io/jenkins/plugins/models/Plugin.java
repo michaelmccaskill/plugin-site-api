@@ -69,7 +69,7 @@ public class Plugin {
   private String requiredCore;
 
   @JsonProperty("scm")
-  private String scm;
+  private Scm scm;
 
   @JsonProperty("sha1")
   private String sha1;
@@ -97,7 +97,7 @@ public class Plugin {
 
   public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
-                String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, String scm, String sha1,
+                String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, Scm scm, String sha1,
                 Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki) {
     this.buildDate = buildDate;
     this.categories = categories;
@@ -217,11 +217,11 @@ public class Plugin {
     this.requiredCore = requiredCore;
   }
 
-  public String getScm() {
+  public Scm getScm() {
     return scm;
   }
 
-  public void setScm(String scm) {
+  public void setScm(Scm scm) {
     this.scm = scm;
   }
 
