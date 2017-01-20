@@ -23,12 +23,20 @@ public class GeneratedPluginData {
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
   private LocalDateTime createdAt;
 
+  @JsonProperty("mappingVersion")
+  private String mappingVersion;
+
+  @JsonProperty("elasticsearchVersion")
+  private String elasticsearchVersion;
+
   public GeneratedPluginData() {
   }
 
-  public GeneratedPluginData(List<Plugin> plugins) {
+  public GeneratedPluginData(List<Plugin> plugins, String mappingVersion, String elasticsearchVersion) {
     this.plugins = plugins;
     this.createdAt = LocalDateTime.now();
+    this.mappingVersion = mappingVersion;
+    this.elasticsearchVersion = elasticsearchVersion;
   }
 
   public List<Plugin> getPlugins() {
@@ -47,4 +55,19 @@ public class GeneratedPluginData {
     this.createdAt = createdAt;
   }
 
+  public String getMappingVersion() {
+    return mappingVersion;
+  }
+
+  public void setMappingVersion(String mappingVersion) {
+    this.mappingVersion = mappingVersion;
+  }
+
+  public String getElasticsearchVersion() {
+    return elasticsearchVersion;
+  }
+
+  public void setElasticsearchVersion(String elasticsearchVersion) {
+    this.elasticsearchVersion = elasticsearchVersion;
+  }
 }
