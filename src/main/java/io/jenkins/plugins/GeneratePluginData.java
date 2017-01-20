@@ -2,6 +2,7 @@ package io.jenkins.plugins;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.*;
+import io.jenkins.plugins.utils.VersionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPOutputStream;
@@ -59,13 +61,15 @@ public class GeneratePluginData {
   }
 
   public void generate() {
-    final JSONObject pluginsJson = getPlugins();
+    final JSONObject updateCenterJson = getUpdateCenterJson();
+    final JSONObject pluginsJson = updateCenterJson.getJSONObject("plugins");
+    final JSONArray warningsJson = updateCenterJson.optJSONArray("warnings");
     final Path statisticsPath = downloadStatistics();
-    final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath);
+    final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath, warningsJson);
     writePluginsToFile(plugins);
   }
 
-  private JSONObject getPlugins() {
+  private JSONObject getUpdateCenterJson() {
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     final ResponseHandler<JSONObject> updateCenterHandler = (httpResponse) -> {
       final StatusLine status = httpResponse.getStatusLine();
@@ -73,7 +77,7 @@ public class GeneratePluginData {
         final HttpEntity entity = httpResponse.getEntity();
         final String content = EntityUtils.toString(entity, StandardCharsets.UTF_8);
         try {
-          return new JSONObject(String.join("", content.split("\n")[1])).getJSONObject("plugins");
+          return new JSONObject(String.join("", content.split("\n")[1]));
         } catch (Exception e) {
           throw new ClientProtocolException("Update center returned invalid JSON");
         }
@@ -83,9 +87,8 @@ public class GeneratePluginData {
     };
     logger.info("Begin downloading plugins from update center");
     try {
-      final JSONObject plugins = httpClient.execute(new HttpGet("https://updates.jenkins-ci.org/current/update-center.json"), updateCenterHandler);
-      logger.info(String.format("Retrieved %d plugins from update center", plugins.keySet().size()));
-      return plugins;
+      final JSONObject data = httpClient.execute(new HttpGet("https://updates.jenkins-ci.org/current/update-center.json"), updateCenterHandler);
+      return data;
     } catch (Exception e) {
       logger.error("Problem communicating with update center", e);
       throw new RuntimeException(e);
@@ -111,14 +114,15 @@ public class GeneratePluginData {
     }
   }
 
-  private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath) {
+  private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath, JSONArray warningsJson) {
     try {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       final Map<String, String> dependencyNameToTitleMap = buildDependencyNameToTitleMap(pluginsJson);
+      final Map<String, List<JSONObject>> warnings = buildNametoWarningsMap(warningsJson);
       final List<Plugin> plugins = new ArrayList<>();
       for (String key : pluginsJson.keySet()) {
         final JSONObject json = pluginsJson.getJSONObject(key);
-        final Plugin plugin = parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap);
+        final Plugin plugin = parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings);
         plugins.add(plugin);
       }
       return plugins;
@@ -128,7 +132,7 @@ public class GeneratePluginData {
     }
   }
 
-  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap, Map<String, String> dependencyNameToTitleMap) {
+  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap, Map<String, String> dependencyNameToTitleMap, Map<String, List<JSONObject>> warningsMap) {
     final Plugin plugin = new Plugin();
     plugin.setExcerpt(json.optString("excerpt", null));
     plugin.setGav(json.optString("gav", null));
@@ -212,6 +216,20 @@ public class GeneratePluginData {
       final String pullRequests = link + "/pulls";
       plugin.setScm(new Scm(issues, link, inLatestRelease, sinceLatestRelease, pullRequests));
     }
+    if (warningsMap.containsKey(plugin.getName())) {
+      final List<SecurityWarning> warnings = new ArrayList<>();
+      for (JSONObject warningJson : warningsMap.get(plugin.getName())) {
+        final List<SecurityWarningVersion> versions = new ArrayList<>();
+          StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false).forEach((obj) -> {
+          final JSONObject versionJson = (JSONObject)obj;
+          final Pattern pattern = Pattern.compile(versionJson.getString("pattern"));
+          final boolean applyToCurrentVersion = pattern.matcher(plugin.getVersion()).matches();
+          versions.add(new SecurityWarningVersion(versionJson.getString("lastVersion"), applyToCurrentVersion));
+        });
+        warnings.add(new SecurityWarning(warningJson.getString("id"), warningJson.getString("message"), warningJson.getString("url"), versions));
+      }
+      plugin.setSecurityWarnings(warnings);
+    }
     return plugin;
   }
 
@@ -231,7 +249,7 @@ public class GeneratePluginData {
             Long.valueOf(timestamp),
             installations.getInt(timestamp)
           )
-        ).sorted(Comparator.comparingLong(Installation::getTimestamp)) .collect(Collectors.toList()));
+        ).sorted(Comparator.comparingLong(Installation::getTimestamp)).collect(Collectors.toList()));
         stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) ->
           new InstallationPercentage(
             Long.valueOf(timestamp),
@@ -269,7 +287,9 @@ public class GeneratePluginData {
   private void writePluginsToFile(List<Plugin> plugins) {
     final File data = Paths.get(System.getProperty("user.dir"), "target", "plugins.json.gzip").toFile();
     try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), StandardCharsets.UTF_8))) {
-      JsonObjectMapper.getObjectMapper().writeValue(writer, new GeneratedPluginData(plugins));
+      final String mappingVersion = VersionUtils.getMappingVersion();
+      final String elasticsearchVersion = VersionUtils.getElasticsearchVersion();
+      JsonObjectMapper.getObjectMapper().writeValue(writer, new GeneratedPluginData(plugins, mappingVersion, elasticsearchVersion));
     } catch (Exception e) {
       logger.error("Problem writing plugin data to file", e);
       throw new RuntimeException(e);
@@ -305,6 +325,24 @@ public class GeneratePluginData {
     for (String key : pluginsJson.keySet()) {
       final JSONObject plugin = pluginsJson.getJSONObject(key);
       result.put(plugin.getString("name"), plugin.getString("title"));
+    }
+    return result;
+  }
+
+  private Map<String, List<JSONObject>> buildNametoWarningsMap(JSONArray warningsJson) {
+    final Map<String, List<JSONObject>> result = new HashMap<>();
+    if (warningsJson != null) {
+      StreamSupport.stream(warningsJson.spliterator(), false).forEach((obj) -> {
+        final JSONObject warning = (JSONObject)obj;
+        final String type = warning.getString("type");
+        if (type.equalsIgnoreCase("plugin")) {
+          final List<JSONObject> warnings = result.getOrDefault(warning.getString("name"), new ArrayList<>());
+          warnings.add(warning);
+          result.put(warning.getString("name"), warnings);
+        }
+      });
+    } else {
+      logger.info("No security warnings found in update center");
     }
     return result;
   }

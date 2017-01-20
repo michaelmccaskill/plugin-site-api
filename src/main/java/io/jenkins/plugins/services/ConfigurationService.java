@@ -10,7 +10,7 @@ public interface ConfigurationService {
   /**
    * <p>Get index data need to populating Elasticsearch</p>
    *
-   * @return GeneratedPluginData
+   * @return GeneratedPluginData, null if it hasn't changed since last time called
    * @throws ServiceException in case something goes wrong
      */
   GeneratedPluginData getIndexData() throws ServiceException;

@@ -86,6 +86,9 @@ public class Plugin {
   @JsonProperty("version")
   private String version;
 
+  @JsonProperty("securityWarnings")
+  private List<SecurityWarning> securityWarnings;
+
   @JsonProperty("wiki")
   private Wiki wiki;
 
@@ -95,7 +98,7 @@ public class Plugin {
   public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, Scm scm, String sha1,
-                Stats stats, String title, String url, String version, Wiki wiki) {
+                Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
@@ -114,6 +117,7 @@ public class Plugin {
     this.title = title;
     this.url = url;
     this.version = version;
+    this.securityWarnings = securityWarnings;
     this.wiki = wiki;
   }
 
@@ -259,6 +263,14 @@ public class Plugin {
 
   public void setVersion(String version) {
     this.version = version;
+  }
+
+  public List<SecurityWarning> getSecurityWarnings() {
+    return securityWarnings;
+  }
+
+  public void setSecurityWarnings(List<SecurityWarning> securityWarnings) {
+    this.securityWarnings = securityWarnings;
   }
 
   public Wiki getWiki() {

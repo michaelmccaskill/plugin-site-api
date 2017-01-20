@@ -10,6 +10,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -27,11 +28,29 @@ public class DefaultConfigurationService implements ConfigurationService {
 
   private final Logger logger = LoggerFactory.getLogger(DefaultConfigurationService.class);
 
+  private enum ModifyType {
+    ETAG,
+    LAST_MODIFIED,
+    NONE
+  }
+
+  private ModifyType modifyType;
+  private String modifyValue;
+
+  public DefaultConfigurationService() {
+    this.modifyType = null;
+    this.modifyValue = null;
+  }
+
   @Override
   public GeneratedPluginData getIndexData() throws ServiceException {
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     try {
       final String url = getDataFileUrl();
+      if (!hasPluginDataChanged(httpClient, url)) {
+        logger.info("Plugin data file hasn't changed");
+        return null;
+      }
       final HttpGet get = new HttpGet(url);
       final CloseableHttpResponse response = httpClient.execute(get);
       if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
@@ -40,7 +59,21 @@ public class DefaultConfigurationService implements ConfigurationService {
         final File dataFile = File.createTempFile("plugins", ".json.gzip");
         FileUtils.copyToFile(inputStream, dataFile);
         final String data = readGzipFile(dataFile);
-        return JsonObjectMapper.getObjectMapper().readValue(data, GeneratedPluginData.class);
+        final GeneratedPluginData generated = JsonObjectMapper.getObjectMapper().readValue(data, GeneratedPluginData.class);
+        if (response.containsHeader("ETag")) {
+          modifyType = ModifyType.ETAG;
+          modifyValue = response.getLastHeader("ETag").getValue();
+          logger.info(String.format("Using ETag [%s]", modifyValue));
+        } else if (response.containsHeader("Last-Modified")) {
+          modifyType = ModifyType.LAST_MODIFIED;
+          modifyValue = response.getLastHeader("Last-Modified").getValue();
+          logger.info(String.format("Using Last-Modified [%s]", modifyValue));
+        } else {
+          modifyType = ModifyType.NONE;
+          modifyValue = null;
+          logger.info("ETag and Last-Modified are not supported by the server");
+        }
+        return generated;
       } else {
         logger.error("Data file not found");
         throw new RuntimeException("Data file not found");
@@ -79,6 +112,30 @@ public class DefaultConfigurationService implements ConfigurationService {
     } catch (Exception e) {
       logger.error("Problem decompressing plugin data", e);
       throw new RuntimeException("Problem decompressing plugin data", e);
+    }
+  }
+
+  private boolean hasPluginDataChanged(CloseableHttpClient httpClient, String url) {
+    if (modifyType == null || modifyType == ModifyType.NONE) {
+      return true;
+    }
+    final HttpHead head = new HttpHead(url);
+    switch (modifyType) {
+      case ETAG:
+        logger.info(String.format("Using ETag [%s]", modifyValue));
+        head.addHeader("If-None-Match", modifyValue);
+        break;
+      case LAST_MODIFIED:
+        logger.info(String.format("Using Last-Modified [%s]", modifyValue));
+        head.addHeader("If-Modified-Since", modifyValue);
+        break;
+    }
+    try {
+      final CloseableHttpResponse response = httpClient.execute(head);
+      return response.getStatusLine().getStatusCode() != HttpStatus.SC_NOT_MODIFIED;
+    } catch (Exception e) {
+      logger.error("Problem determining if plugin data file changed", e);
+      throw new ServiceException("Problem determining if plugin data file changed", e);
     }
   }
 

@@ -3,6 +3,7 @@ package io.jenkins.plugins.datastore;
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.GeneratedPluginData;
 import io.jenkins.plugins.services.ConfigurationService;
+import io.jenkins.plugins.utils.VersionUtils;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -25,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -86,25 +86,47 @@ public class EmbeddedElasticsearchServer {
   private void populateIndex() {
     try {
       final GeneratedPluginData data = configurationService.getIndexData();
-      doPopulateIndex(data);
+      if (shouldIndex(data)) {
+        doPopulateIndex(data);
+      }
     } catch (Exception e) {
       logger.error("Problem populating index", e);
       throw new RuntimeException("Problem populating index", e);
     }
   }
 
-  private void doPopulateIndex(GeneratedPluginData data) {
-    final Optional<LocalDateTime> optCreatedAt = getCurrentCreatedAt();
-    if (optCreatedAt.isPresent()) {
-      final LocalDateTime createdAt = optCreatedAt.get();
-      final LocalDateTime generatedCreatedAt = LocalDateTime.parse(TIMESTAMP_FORMATTER.format(data.getCreatedAt()), TIMESTAMP_FORMATTER);
-      logger.info("Current timestamp - " + createdAt);
-      logger.info("Data timestamp    - " + generatedCreatedAt);
-      if (createdAt.equals(generatedCreatedAt) || createdAt.isAfter(generatedCreatedAt)) {
-        logger.info("Plugin data is already up to date");
-        return;
+  private boolean shouldIndex(GeneratedPluginData data) {
+    if (data != null) {
+      final LocalDateTime createdAt = getCurrentCreatedAt();
+      if (createdAt != null) {
+        final LocalDateTime generatedCreatedAt = LocalDateTime.parse(TIMESTAMP_FORMATTER.format(data.getCreatedAt()), TIMESTAMP_FORMATTER);
+        logger.info("Current timestamp - " + createdAt);
+        logger.info("Data timestamp    - " + generatedCreatedAt);
+        if (createdAt.equals(generatedCreatedAt) || createdAt.isAfter(generatedCreatedAt)) {
+          logger.info("Plugin data is already up to date");
+          return false;
+        }
       }
+      final String mappingVersion = VersionUtils.getMappingVersion();
+      if (data.getMappingVersion() != null && !data.getMappingVersion().equalsIgnoreCase(mappingVersion)) {
+        logger.warn(String.format("Data has mapping version '%s' but application has '%s'", data.getMappingVersion(), mappingVersion));
+        logger.warn("Cannot index with new data. More than likely the application needs to be rebuilt and deployed first");
+        return false;
+      }
+      final String elasticsearchVersion = VersionUtils.getElasticsearchVersion();
+      if (data.getElasticsearchVersion() != null && !data.getElasticsearchVersion().equalsIgnoreCase(elasticsearchVersion)) {
+        logger.warn(String.format("Data has Elasticsearch version '%s' but application has '%s'", data.getElasticsearchVersion(), elasticsearchVersion));
+        logger.warn("Cannot index with new data. More than likely the application needs to be rebuilt and deployed first");
+        return false;
+      }
+      return true;
+    } else {
+      logger.info("Plugin data hasn't changed");
+      return false;
     }
+  }
+
+  private void doPopulateIndex(GeneratedPluginData data) {
     final ClassLoader cl = getClass().getClassLoader();
     final String index = String.format("%s%s", INDEX_PREFIX, TIMESTAMP_FORMATTER.format(data.getCreatedAt()));
     try {
@@ -156,20 +178,20 @@ public class EmbeddedElasticsearchServer {
     }
   }
 
-  private Optional<LocalDateTime> getCurrentCreatedAt() {
+  private LocalDateTime getCurrentCreatedAt() {
     final Client client = getClient();
     if (client.admin().indices().prepareAliasesExist(ALIAS).get().exists()) {
       final String index = client.admin().indices().prepareGetAliases(ALIAS).get().getAliases().iterator().next().key;
       final String timestamp = index.substring(INDEX_PREFIX.length());
       try {
-        return Optional.of(LocalDateTime.parse(timestamp, TIMESTAMP_FORMATTER));
+        return LocalDateTime.parse(timestamp, TIMESTAMP_FORMATTER);
       } catch (Exception e) {
         logger.error("Problem parsing timestamp from index", e);
-        return Optional.empty();
+        return null;
       }
     } else {
       logger.info("Alias doesn't exist");
-      return Optional.empty();
+      return null;
     }
   }
 
