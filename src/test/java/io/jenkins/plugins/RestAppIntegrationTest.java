@@ -210,4 +210,12 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertEquals("Versions limit doesn't match", versions.getLimit(), versions.getVersions().size());
   }
 
+  @Test
+  public void testGetInfo() {
+    final Info info = target("/info").request().get(Info.class);
+    Assert.assertNotNull("Info null", info);
+    Assert.assertNotNull("Info.commit null", info.getCommit());
+    Assert.assertFalse("Info.commit empty", info.getCommit().isEmpty());
+  }
+
 }
