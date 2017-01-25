@@ -118,6 +118,38 @@
           }
         }
       },
+      "securityWarnings": {
+        "type" : "nested",
+        "properties" : {
+          "applyToCurrentVersion": {
+            "type": "boolean"
+          },
+          "id": {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "message": {
+            "type" : "string"
+          },
+          "url": {
+            "type" : "string",
+            "index" : "not_analyzed"
+          },
+          "warnings": {
+            "type" : "nested",
+            "properties" : {
+              "firstVersion": {
+                "type" : "string",
+                "index" : "not_analyzed"
+              },
+              "lastVersion": {
+                "type" : "string",
+                "index" : "not_analyzed"
+              }
+            }
+          }
+        }
+      },
       "sha1" : {
         "type" : "string",
         "index" : "not_analyzed"
