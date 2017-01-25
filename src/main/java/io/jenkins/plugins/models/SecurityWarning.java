@@ -20,14 +20,18 @@ public class SecurityWarning {
   @JsonProperty("warnings")
   private List<SecurityWarningVersion> versions;
 
+  @JsonProperty("applyToCurrentVersion")
+  private boolean applyToCurrentVersion;
+
   public SecurityWarning() {
   }
 
-  public SecurityWarning(String id, String message, String url, List<SecurityWarningVersion> versions) {
+  public SecurityWarning(String id, String message, String url, List<SecurityWarningVersion> versions, boolean applyToCurrentVersion) {
     this.id = id;
     this.message = message;
     this.url = url;
     this.versions = versions;
+    this.applyToCurrentVersion = applyToCurrentVersion;
   }
 
   public String getId() {
@@ -61,4 +65,13 @@ public class SecurityWarning {
   public void setVersions(List<SecurityWarningVersion> versions) {
     this.versions = versions;
   }
+
+  public boolean isApplyToCurrentVersion() {
+    return applyToCurrentVersion;
+  }
+
+  public void setApplyToCurrentVersion(boolean applyToCurrentVersion) {
+    this.applyToCurrentVersion = applyToCurrentVersion;
+  }
+
 }

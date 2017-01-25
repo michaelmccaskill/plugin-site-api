@@ -220,13 +220,22 @@ public class GeneratePluginData {
       final List<SecurityWarning> warnings = new ArrayList<>();
       for (JSONObject warningJson : warningsMap.get(plugin.getName())) {
         final List<SecurityWarningVersion> versions = new ArrayList<>();
-          StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false).forEach((obj) -> {
+        final boolean applyToCurrentVersion = StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false).map((obj) -> {
           final JSONObject versionJson = (JSONObject)obj;
           final Pattern pattern = Pattern.compile(versionJson.getString("pattern"));
-          final boolean applyToCurrentVersion = pattern.matcher(plugin.getVersion()).matches();
-          versions.add(new SecurityWarningVersion(versionJson.getString("lastVersion"), applyToCurrentVersion));
-        });
-        warnings.add(new SecurityWarning(warningJson.getString("id"), warningJson.getString("message"), warningJson.getString("url"), versions));
+          versions.add(new SecurityWarningVersion(
+            versionJson.optString("firstVersion", null),
+            versionJson.optString("lastVersion", null))
+          );
+          return pattern.matcher(plugin.getVersion()).matches();
+        }).reduce(false, (accum, next) -> accum || next);
+        warnings.add(new SecurityWarning(
+          warningJson.getString("id"),
+          warningJson.getString("message"),
+          warningJson.getString("url"),
+          versions,
+          applyToCurrentVersion)
+        );
       }
       plugin.setSecurityWarnings(warnings);
     }
