@@ -22,6 +22,7 @@ node('docker') {
         dir('deploy/plugin-site') {
             echo 'Cloning the latest front-end site for baking our container'
             git 'https://github.com/jenkins-infra/plugin-site.git'
+            sh 'git rev-parse HEAD > GIT_COMMIT'
         }
     }
 
