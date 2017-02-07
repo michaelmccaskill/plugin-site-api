@@ -75,6 +75,14 @@ public class DatastoreServiceIntegrationTest {
   }
 
   @Test
+  public void testGetPluginSecurityWarnings() {
+    final Plugin plugin = datastoreService.getPlugin("cucumber-reports");
+    Assert.assertNotNull("cucumber-reports plugin not found", plugin);
+    Assert.assertEquals("cucumber-reports", plugin.getName());
+    Assert.assertFalse("securityWarnings are empty", plugin.getSecurityWarnings().isEmpty());
+  }
+
+  @Test
   public void testSearch() {
     final Plugins plugins = datastoreService.search(new SearchOptions("git", null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
     Assert.assertNotNull("Search for 'git' is null", plugins);
