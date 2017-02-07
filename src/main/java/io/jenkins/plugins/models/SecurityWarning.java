@@ -17,21 +17,25 @@ public class SecurityWarning {
   @JsonProperty("url")
   private String url;
 
-  @JsonProperty("warnings")
-  private List<SecurityWarningVersion> versions;
+  @JsonProperty("active")
+  private boolean active;
 
-  @JsonProperty("applyToCurrentVersion")
-  private boolean applyToCurrentVersion;
+  @JsonProperty("firstVersion")
+  private String firstVersion;
+
+  @JsonProperty("lastVersion")
+  private String lastVersion;
 
   public SecurityWarning() {
   }
 
-  public SecurityWarning(String id, String message, String url, List<SecurityWarningVersion> versions, boolean applyToCurrentVersion) {
+  public SecurityWarning(String id, String message, String url, boolean active, String firstVersion, String lastVersion) {
     this.id = id;
     this.message = message;
     this.url = url;
-    this.versions = versions;
-    this.applyToCurrentVersion = applyToCurrentVersion;
+    this.active = active;
+    this.firstVersion = firstVersion;
+    this.lastVersion = lastVersion;
   }
 
   public String getId() {
@@ -58,20 +62,28 @@ public class SecurityWarning {
     this.url = url;
   }
 
-  public List<SecurityWarningVersion> getVersions() {
-    return versions;
+  public boolean isActive() {
+    return active;
   }
 
-  public void setVersions(List<SecurityWarningVersion> versions) {
-    this.versions = versions;
+  public void setActive(boolean active) {
+    this.active = active;
   }
 
-  public boolean isApplyToCurrentVersion() {
-    return applyToCurrentVersion;
+  public String getFirstVersion() {
+    return firstVersion;
   }
 
-  public void setApplyToCurrentVersion(boolean applyToCurrentVersion) {
-    this.applyToCurrentVersion = applyToCurrentVersion;
+  public void setFirstVersion(String firstVersion) {
+    this.firstVersion = firstVersion;
+  }
+
+  public String getLastVersion() {
+    return lastVersion;
+  }
+
+  public void setLastVersion(String lastVersion) {
+    this.lastVersion = lastVersion;
   }
 
 }
