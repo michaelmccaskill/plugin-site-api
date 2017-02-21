@@ -1,6 +1,7 @@
 package io.jenkins.plugins.services;
 
 import io.jenkins.plugins.models.*;
+import io.jenkins.plugins.services.impl.DefaultConfigurationService;
 import io.jenkins.plugins.services.impl.ElasticsearchDatastoreService;
 import io.jenkins.plugins.services.impl.HttpClientWikiService;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -35,7 +36,7 @@ public class DatastoreServiceIntegrationTest {
         @Override
         protected void configure() {
           bind(mockScheduledExecutorService.getClass()).to(ScheduledExecutorService.class).in(Singleton.class);
-          bind(MockConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
+          bind(DefaultConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
           bind(ElasticsearchDatastoreService.class).to(DatastoreService.class).in(Singleton.class);
           bind(HttpClientWikiService.class).to(WikiService.class).in(Singleton.class);
         }
