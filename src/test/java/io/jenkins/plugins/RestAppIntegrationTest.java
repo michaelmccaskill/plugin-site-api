@@ -1,6 +1,7 @@
 package io.jenkins.plugins;
 
 import io.jenkins.plugins.models.*;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.jetty.JettyTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerException;
@@ -32,6 +33,12 @@ public class RestAppIntegrationTest extends JerseyTest {
     Assert.assertFalse("Maintainers are empty", plugin.getMaintainers().isEmpty());
     Assert.assertFalse("Labels are empty", plugin.getLabels().isEmpty());
     Assert.assertNotNull("Stats are null", plugin.getStats());
+    Assert.assertNotNull("Scm is null", plugin.getScm());
+    Assert.assertTrue("Scm issues is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
+    Assert.assertTrue("Scm link is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
+    Assert.assertTrue("Scm inLatestRelease is blank", StringUtils.isNotBlank(plugin.getScm().getInLatestRelease()));
+    Assert.assertTrue("Scm sinceLatestRelease is blank", StringUtils.isNotBlank(plugin.getScm().getSinceLatestRelease()));
+    Assert.assertTrue("Scm pullRequests is blank", StringUtils.isNotBlank(plugin.getScm().getPullRequests()));
   }
 
   @Test
@@ -46,6 +53,15 @@ public class RestAppIntegrationTest extends JerseyTest {
       }
     }
     Assert.fail("Should have \"Oliver Gondža\" in maintainers");
+  }
+
+  @Test
+  public void testGetPluginNoScmButHaveIssues() {
+    final Plugin plugin = target("/plugin/ace-editor").request().get(Plugin.class);
+    Assert.assertNotNull("ACE editor plugin not found", plugin);
+    Assert.assertEquals("ace-editor", plugin.getName());
+    Assert.assertNotNull("Scm is null", plugin.getScm());
+    Assert.assertTrue("Scm issues is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
   }
 
   @Test

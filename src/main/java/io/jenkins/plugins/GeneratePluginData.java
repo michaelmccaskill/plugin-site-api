@@ -206,16 +206,8 @@ public class GeneratePluginData {
     }
     final Stats stats = parseStatistics(plugin.getName(), json, statisticsPath);
     plugin.setStats(stats);
-    if (json.optString("scm", "").endsWith("github.com")) {
-      final String name = plugin.getName().endsWith("-plugin") ? plugin.getName() : plugin.getName() + "-plugin";
-      final String issues = "http://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&reset=true&jqlQuery=project+%3D+JENKINS+AND+status+in+%28Open%2C+%22In+Progress%22%2C+Reopened%29+AND+component+%3D+%27" + name + "%27";
-      final String link = "https://github.com/jenkinsci/" + name;
-      final String baseCompareUrl = String.format("%s/compare/%s-", link, plugin.getName());
-      final String inLatestRelease = String.format("%s%s...%s-%s", baseCompareUrl, plugin.getPreviousVersion(), plugin.getName(), plugin.getVersion());
-      final String sinceLatestRelease = String.format("%s%s...master", baseCompareUrl, plugin.getVersion());
-      final String pullRequests = link + "/pulls";
-      plugin.setScm(new Scm(issues, link, inLatestRelease, sinceLatestRelease, pullRequests));
-    }
+    final Scm scm = parseScm(plugin, json.optString("scm", ""));
+    plugin.setScm(scm);
     if (warningsMap.containsKey(plugin.getName())) {
       final List<SecurityWarning> warnings = new ArrayList<>();
       for (JSONObject warningJson : warningsMap.get(plugin.getName())) {
@@ -236,6 +228,25 @@ public class GeneratePluginData {
       plugin.setSecurityWarnings(warnings);
     }
     return plugin;
+  }
+
+  private Scm parseScm(Plugin plugin, String scmString) {
+    final Scm scm = new Scm();
+    final String name = plugin.getName().endsWith("-plugin") ? plugin.getName() : plugin.getName() + "-plugin";
+    final String issues = "http://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&reset=true&jqlQuery=project+%3D+JENKINS+AND+status+in+%28Open%2C+%22In+Progress%22%2C+Reopened%29+AND+component+%3D+%27" + name + "%27";
+    scm.setIssues(issues);
+    if (scmString.endsWith("github.com")) {
+      final String link = "https://github.com/jenkinsci/" + name;
+      final String baseCompareUrl = String.format("%s/compare/%s-", link, plugin.getName());
+      final String inLatestRelease = String.format("%s%s...%s-%s", baseCompareUrl, plugin.getPreviousVersion(), plugin.getName(), plugin.getVersion());
+      final String sinceLatestRelease = String.format("%s%s...master", baseCompareUrl, plugin.getVersion());
+      final String pullRequests = link + "/pulls";
+      scm.setLink(link);
+      scm.setInLatestRelease(inLatestRelease);
+      scm.setSinceLatestRelease(sinceLatestRelease);
+      scm.setPullRequests(pullRequests);
+    }
+    return scm;
   }
 
   private Stats parseStatistics(String name, JSONObject json, Path statisticsPath) {
