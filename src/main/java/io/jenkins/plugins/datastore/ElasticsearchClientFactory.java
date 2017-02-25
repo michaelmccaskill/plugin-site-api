@@ -13,12 +13,16 @@ import javax.inject.Inject;
  */
 public class ElasticsearchClientFactory implements Factory<Client> {
 
+  private final EmbeddedElasticsearchServer server;
+
   @Inject
-  private EmbeddedElasticsearchServer es;
+  public ElasticsearchClientFactory(EmbeddedElasticsearchServer server) {
+    this.server = server;
+  }
 
   @Override
   public Client provide() {
-    return es.getClient();
+    return server.getClient();
   }
 
   @Override
