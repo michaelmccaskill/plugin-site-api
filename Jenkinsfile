@@ -20,8 +20,9 @@ node('docker') {
         shortCommit = readFile('GIT_COMMIT').take(6)
 
         dir('deploy/plugin-site') {
+            def branch = env.BRANCH_NAME != 'master' ? 'develop' : 'master'
             echo 'Cloning the latest front-end site for baking our container'
-            git 'https://github.com/jenkins-infra/plugin-site.git'
+            git url: 'https://github.com/jenkins-infra/plugin-site.git', branch: branch
             sh 'git rev-parse HEAD > GIT_COMMIT'
         }
     }

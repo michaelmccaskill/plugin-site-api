@@ -87,8 +87,7 @@ public class GeneratePluginData {
     };
     logger.info("Begin downloading plugins from update center");
     try {
-      final JSONObject data = httpClient.execute(new HttpGet("https://updates.jenkins-ci.org/current/update-center.json"), updateCenterHandler);
-      return data;
+      return httpClient.execute(new HttpGet("https://updates.jenkins.io/current/update-center.json"), updateCenterHandler);
     } catch (Exception e) {
       logger.error("Problem communicating with update center", e);
       throw new RuntimeException(e);
