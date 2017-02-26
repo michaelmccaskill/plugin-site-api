@@ -1,7 +1,11 @@
 FROM jetty:9-alpine
 
-# Adds yarn since it's only in testing
+# Adds yarn. Worked before but was in testing. Now in community.Add main to ensure
+# it keeps working
+RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories
+RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories
 RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+
 
 # Add our system dependencies for running jetty and node services inside the
 # container
