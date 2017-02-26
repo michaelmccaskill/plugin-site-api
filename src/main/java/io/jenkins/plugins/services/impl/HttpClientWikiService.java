@@ -131,8 +131,8 @@ public class HttpClientWikiService implements WikiService {
     // This removes specific Confluence elements not needed by the front end
     wikiContent.getElementsByClass("table-wrap").remove();
     // Replace href/src with the wiki url
-    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href"));
-    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src"));
+    wikiContent.getElementsByAttribute("href").forEach(element -> replaceAttribute(element, "href"));
+    wikiContent.getElementsByAttribute("src").forEach(element -> replaceAttribute(element, "src"));
     return wikiContent.html();
   }
 

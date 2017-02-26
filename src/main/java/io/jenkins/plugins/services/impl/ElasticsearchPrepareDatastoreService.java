@@ -15,7 +15,6 @@ import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -106,7 +105,7 @@ public class ElasticsearchPrepareDatastoreService implements PrepareDatastoreSer
         .get();
       logger.info(String.format("Index '%s' created", index));
       final BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
-      data.getPlugins().forEach((plugin) -> {
+      data.getPlugins().forEach(plugin -> {
         try {
           final IndexRequest indexRequest = client.prepareIndex(index, TYPE, plugin.getName())
             .setSource(JsonObjectMapper.getObjectMapper().writeValueAsString(plugin)).request();

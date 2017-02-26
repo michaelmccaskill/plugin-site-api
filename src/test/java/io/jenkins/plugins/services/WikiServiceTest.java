@@ -38,11 +38,11 @@ public class WikiServiceTest {
     final String cleanContent = wikiService.cleanWikiContent(content);
     Assert.assertNotNull("Wiki content is null", cleanContent);
     final Document html = Jsoup.parseBodyFragment(cleanContent);
-    html.getElementsByAttribute("href").forEach((element) -> {
+    html.getElementsByAttribute("href").forEach(element -> {
       final String value = element.attr("href");
       Assert.assertFalse("Wiki content not clean - href references to root : " + value, value.startsWith("/"));
     });
-    html.getElementsByAttribute("src").forEach((element) -> {
+    html.getElementsByAttribute("src").forEach(element -> {
       final String value = element.attr("src");
       Assert.assertFalse("Wiki content not clean - src references to root : " + value, value.startsWith("/"));
     });
