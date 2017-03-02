@@ -1,242 +1,236 @@
 {
-  "plugins" : {
-    "properties" : {
-      "buildDate" : {
-        "type" : "date",
-        "format" : "date"
+  "plugins":{
+    "properties":{
+      "buildDate":{
+        "type":"date",
+        "format":"date"
       },
-      "categories" : {
-        "type" : "string",
-        "index" : "not_analyzed"
+      "categories":{
+        "type":"string",
+        "index":"not_analyzed"
       },
-      "dependencies" : {
-        "type" : "nested",
-        "properties" : {
-          "name" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+      "dependencies":{
+        "type":"nested",
+        "properties":{
+          "name":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "title" : {
-            "type" : "string",
-            "fields" : {
-              "raw" : {
-                "type" : "string",
-                "index" : "not_analyzed"
+          "optional":{
+            "type":"boolean"
+          },
+          "title":{
+            "type":"string",
+            "fields":{
+              "raw":{
+                "type":"string",
+                "index":"not_analyzed"
               }
             }
           },
-          "optional" : {
-            "type" : "boolean"
-          },
-          "version" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "version":{
+            "type":"string",
+            "index":"not_analyzed"
           }
         }
       },
-      "maintainers" : {
-        "type" : "nested",
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+      "excerpt":{
+        "type":"string"
+      },
+      "gav":{
+        "type":"string",
+        "index":"not_analyzed"
+      },
+      "labels":{
+        "type":"string",
+        "index":"not_analyzed"
+      },
+      "maintainers":{
+        "type":"nested",
+        "properties":{
+          "email":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "email" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "id":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "name" : {
-            "type" : "string",
-            "fields" : {
-              "raw" : {
-                "type" : "string",
-                "index" : "not_analyzed"
+          "name":{
+            "type":"string",
+            "fields":{
+              "raw":{
+                "type":"string",
+                "index":"not_analyzed"
               }
             }
           }
         }
       },
-      "excerpt" : {
-        "type" : "string"
-      },
-      "gav" : {
-        "type" : "string",
-        "index" : "not_analyzed"
-      },
-      "labels" : {
-        "type" : "string",
-        "index" : "not_analyzed"
-      },
-      "name" : {
-        "type" : "string",
-        "index" : "not_analyzed",
-        "fields" : {
-          "raw" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+      "name":{
+        "type":"string",
+        "index":"not_analyzed",
+        "fields":{
+          "raw":{
+            "type":"string",
+            "index":"not_analyzed"
           }
         }
       },
-      "previousTimestamp" : {
-        "type" : "date",
-        "format" : "date_time"
+      "previousTimestamp":{
+        "type":"date",
+        "format":"date_time"
       },
-      "previousVersion" : {
-        "type" : "string",
-        "index" : "not_analyzed"
+      "previousVersion":{
+        "type":"string",
+        "index":"not_analyzed"
       },
-      "releaseTimestamp" : {
-        "type" : "date",
-        "format" : "date_time"
+      "releaseTimestamp":{
+        "type":"date",
+        "format":"date_time"
       },
-      "requiredCore" : {
-        "type" : "string",
-        "index" : "not_analyzed"
+      "requiredCore":{
+        "type":"string",
+        "index":"not_analyzed"
       },
-      "scm" : {
-        "type" : "nested",
-        "properties" : {
-          "issues" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+      "scm":{
+        "type":"nested",
+        "properties":{
+          "inLatestRelease":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "link" : {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "issues":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "inLatestRelease": {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "link":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "sinceLatestRelease": {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "pullRequests":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "pullRequests": {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "sinceLatestRelease":{
+            "type":"string",
+            "index":"not_analyzed"
           }
         }
       },
-      "securityWarnings": {
-        "type" : "nested",
-        "properties" : {
-          "applyToCurrentVersion": {
-            "type": "boolean"
+      "securityWarnings":{
+        "type":"nested",
+        "properties":{
+          "active":{
+            "type":"boolean"
           },
-          "id": {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "firstVersion":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "message": {
-            "type" : "string"
+          "id":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "url": {
-            "type" : "string",
-            "index" : "not_analyzed"
+          "lastVersion":{
+            "type":"string",
+            "index":"not_analyzed"
           },
-          "warnings": {
-            "type" : "nested",
-            "properties" : {
-              "firstVersion": {
-                "type" : "string",
-                "index" : "not_analyzed"
+          "message":{
+            "type":"string"
+          },
+          "url":{
+            "type":"string",
+            "index":"not_analyzed"
+          }
+        }
+      },
+      "sha1":{
+        "type":"string",
+        "index":"not_analyzed"
+      },
+      "stats":{
+        "type":"nested",
+        "properties":{
+          "currentInstalls":{
+            "type":"long"
+          },
+          "installations":{
+            "type":"nested",
+            "properties":{
+              "timestamp":{
+                "type":"date",
+                "format":"epoch_millis"
               },
-              "lastVersion": {
-                "type" : "string",
-                "index" : "not_analyzed"
+              "total":{
+                "type":"integer"
               }
             }
+          },
+          "installationsPerVersion":{
+            "type":"nested",
+            "properties":{
+              "total":{
+                "type":"integer"
+              },
+              "version":{
+                "type":"string",
+                "index":"not_analyzed"
+              }
+            }
+          },
+          "installationsPercentage":{
+            "type":"nested",
+            "properties":{
+              "percentage":{
+                "type":"double"
+              },
+              "timestamp":{
+                "type":"date",
+                "format":"epoch_millis"
+              }
+            }
+          },
+          "installationsPercentagePerVersion":{
+            "type":"nested",
+            "properties":{
+              "percentage":{
+                "type":"double"
+              },
+              "version":{
+                "type":"string",
+                "index":"not_analyzed"
+              }
+            }
+          },
+          "trend":{
+            "type":"long"
           }
         }
       },
-      "sha1" : {
-        "type" : "string",
-        "index" : "not_analyzed"
-      },
-      "stats" : {
-        "type" : "nested",
-        "properties" : {
-          "installations" : {
-            "type" : "nested",
-            "properties" : {
-              "timestamp" : {
-                "type" : "date",
-                "format" : "epoch_millis"
-              },
-              "total" : {
-                "type" : "integer"
-              }
-            }
-          },
-          "installationsPercentage": {
-            "type" : "nested",
-            "properties" : {
-              "timestamp" : {
-                "type" : "date",
-                "format" : "epoch_millis"
-              },
-              "percentage" : {
-                "type" : "double"
-              }
-            }
-          },
-          "installationsPerVersion" : {
-            "type" : "nested",
-            "properties" : {
-              "version" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "total" : {
-                "type" : "integer"
-              }
-            }
-          },
-          "installationsPercentagePerVersion" : {
-            "type" : "nested",
-            "properties" : {
-              "version" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "percentage" : {
-                "type" : "double"
-              }
-            }
-          },
-          "currentInstalls" : {
-            "type" : "long"
-          },
-          "trend" : {
-            "type": "long"
+      "title":{
+        "type":"string",
+        "fields":{
+          "raw":{
+            "type":"string",
+            "index":"not_analyzed"
           }
         }
       },
-      "title" : {
-        "type" : "string",
-        "fields" : {
-          "raw" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          }
-        }
+      "url":{
+        "type":"string",
+        "index":"not_analyzed"
       },
-      "url" : {
-        "type" : "string",
-        "index" : "not_analyzed"
+      "version":{
+        "type":"string",
+        "index":"not_analyzed"
       },
-      "version" : {
-        "type" : "string",
-        "index" : "not_analyzed"
-      },
-      "wiki" : {
-        "type" : "nested",
-          "properties" : {
-            "url": {
-              "type" : "string",
-              "index" : "not_analyzed"
-            }
+      "wiki":{
+        "type":"nested",
+        "properties":{
+          "url":{
+            "type":"string",
+            "index":"not_analyzed"
           }
         }
       }

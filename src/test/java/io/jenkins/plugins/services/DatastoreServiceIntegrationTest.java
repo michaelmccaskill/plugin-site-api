@@ -1,8 +1,7 @@
 package io.jenkins.plugins.services;
 
 import io.jenkins.plugins.models.*;
-import io.jenkins.plugins.services.impl.ElasticsearchDatastoreService;
-import io.jenkins.plugins.services.impl.HttpClientWikiService;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -31,16 +30,15 @@ public class DatastoreServiceIntegrationTest {
     mockScheduledExecutorService = Mockito.mock(ScheduledExecutorService.class);
     locator  = ServiceLocatorUtilities.bind(
       new io.jenkins.plugins.datastore.Binder(),
+      new io.jenkins.plugins.services.Binder(),
       new AbstractBinder() {
-        @Override
-        protected void configure() {
-          bind(mockScheduledExecutorService.getClass()).to(ScheduledExecutorService.class).in(Singleton.class);
-          bind(MockConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
-          bind(ElasticsearchDatastoreService.class).to(DatastoreService.class).in(Singleton.class);
-          bind(HttpClientWikiService.class).to(WikiService.class).in(Singleton.class);
-        }
-      });
+      @Override
+      protected void configure() {
+        bind(mockScheduledExecutorService.getClass()).to(ScheduledExecutorService.class).in(Singleton.class);
+      }
+    });
     datastoreService = locator.getService(DatastoreService.class);
+    locator.getService(PrepareDatastoreService.class).populateDataStore();
   }
 
   @AfterClass
@@ -58,6 +56,12 @@ public class DatastoreServiceIntegrationTest {
     Assert.assertFalse("Maintainers are empty", plugin.getMaintainers().isEmpty());
     Assert.assertFalse("Labels are empty", plugin.getLabels().isEmpty());
     Assert.assertNotNull("Stats are null", plugin.getStats());
+    Assert.assertNotNull("Scm is null", plugin.getScm());
+    Assert.assertTrue("Scm issues is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
+    Assert.assertTrue("Scm link is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
+    Assert.assertTrue("Scm inLatestRelease is blank", StringUtils.isNotBlank(plugin.getScm().getInLatestRelease()));
+    Assert.assertTrue("Scm sinceLatestRelease is blank", StringUtils.isNotBlank(plugin.getScm().getSinceLatestRelease()));
+    Assert.assertTrue("Scm pullRequests is blank", StringUtils.isNotBlank(plugin.getScm().getPullRequests()));
   }
 
   @Test
@@ -72,6 +76,15 @@ public class DatastoreServiceIntegrationTest {
       }
     }
     Assert.fail("Should have \"Oliver Gondža\" in maintainers");
+  }
+
+  @Test
+  public void testGetPluginNoScmButHaveIssues() {
+    final Plugin plugin = datastoreService.getPlugin("ace-editor");
+    Assert.assertNotNull("ACE editor plugin not found", plugin);
+    Assert.assertEquals("ace-editor", plugin.getName());
+    Assert.assertNotNull("Scm is null", plugin.getScm());
+    Assert.assertTrue("Scm issues is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
   }
 
   @Test

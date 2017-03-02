@@ -1,9 +1,15 @@
 FROM jetty:9-alpine
 
+# Adds yarn. Worked before but was in testing. Now in community.Add main to ensure
+# it keeps working
+RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories
+RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories
+RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+
+
 # Add our system dependencies for running jetty and node services inside the
 # container
-RUN apk update && apk add supervisor nodejs
-
+RUN apk update && apk add supervisor nodejs yarn
 
 # Bring our Java backend app over for Jetty
 COPY *.war /var/lib/jetty/webapps/ROOT.war
@@ -16,7 +22,7 @@ RUN mkdir /plugins
 COPY plugin-site /plugins
 WORKDIR /plugins
 # Make sure all our node dependencies are present and accounted for
-RUN npm install
+RUN yarn
 
 
 WORKDIR $JETTY_BASE

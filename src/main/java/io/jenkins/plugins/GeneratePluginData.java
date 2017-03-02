@@ -14,7 +14,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.jgit.api.Git;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -63,7 +63,7 @@ public class GeneratePluginData {
   public void generate() {
     final JSONObject updateCenterJson = getUpdateCenterJson();
     final JSONObject pluginsJson = updateCenterJson.getJSONObject("plugins");
-    final JSONArray warningsJson = updateCenterJson.optJSONArray("warnings");
+    final JSONArray warningsJson = updateCenterJson.getJSONArray("warnings");
     final Path statisticsPath = downloadStatistics();
     final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath, warningsJson);
     writePluginsToFile(plugins);
@@ -71,7 +71,7 @@ public class GeneratePluginData {
 
   private JSONObject getUpdateCenterJson() {
     final CloseableHttpClient httpClient = HttpClients.createDefault();
-    final ResponseHandler<JSONObject> updateCenterHandler = (httpResponse) -> {
+    final ResponseHandler<JSONObject> updateCenterHandler = httpResponse -> {
       final StatusLine status = httpResponse.getStatusLine();
       if (status.getStatusCode() == 200) {
         final HttpEntity entity = httpResponse.getEntity();
@@ -87,8 +87,7 @@ public class GeneratePluginData {
     };
     logger.info("Begin downloading plugins from update center");
     try {
-      final JSONObject data = httpClient.execute(new HttpGet("https://updates.jenkins-ci.org/current/update-center.json"), updateCenterHandler);
-      return data;
+      return httpClient.execute(new HttpGet("https://updates.jenkins.io/current/update-center.json"), updateCenterHandler);
     } catch (Exception e) {
       logger.error("Problem communicating with update center", e);
       throw new RuntimeException(e);
@@ -118,14 +117,11 @@ public class GeneratePluginData {
     try {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       final Map<String, String> dependencyNameToTitleMap = buildDependencyNameToTitleMap(pluginsJson);
-      final Map<String, List<JSONObject>> warnings = buildNametoWarningsMap(warningsJson);
-      final List<Plugin> plugins = new ArrayList<>();
-      for (String key : pluginsJson.keySet()) {
-        final JSONObject json = pluginsJson.getJSONObject(key);
-        final Plugin plugin = parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings);
-        plugins.add(plugin);
-      }
-      return plugins;
+      final Map<String, List<JSONObject>> warnings = buildNameToWarningsMap(warningsJson);
+      return pluginsJson.keySet().stream()
+        .map(pluginsJson::getJSONObject)
+        .map(json -> parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings))
+        .collect(Collectors.toList());
     } catch (Exception e) {
       logger.error("Problem generating plugins", e);
       throw new RuntimeException(e);
@@ -144,53 +140,40 @@ public class GeneratePluginData {
     plugin.setUrl(json.optString("url", null));
     plugin.setVersion(json.optString("version", null));
     plugin.setWiki(new Wiki(null, json.optString("wiki", null)));
-    final Set<String> categories = new HashSet<>();
-    final List<String> labels = new ArrayList<>();
-    final JSONArray labelsJson = json.optJSONArray("labels");
-    if (labelsJson != null) {
-      for (int i = 0; i < labelsJson.length(); i++) {
-        final String label = labelsJson.getString(i);
-        if (labelToCategoryMap.containsKey(label)) {
-          categories.add(labelToCategoryMap.get(label));
-        }
-        labels.add(label);
-      }
-    }
+    final List<String> labels = StreamSupport.stream(json.optJSONArray("labels").spliterator(), false)
+      .map(obj -> (String)obj)
+      .collect(Collectors.toList());
+    final Set<String> categories = labels.stream()
+      .filter(labelToCategoryMap::containsKey)
+      .map(labelToCategoryMap::get)
+      .collect(Collectors.toSet());
     plugin.setLabels(labels);
     plugin.setCategories(new ArrayList<>(categories));
-    final List<Dependency> dependencies = new ArrayList<>();
-    final JSONArray dependenciesJson = json.getJSONArray("dependencies");
-    if (dependenciesJson != null) {
-      for (int i = 0; i < dependenciesJson.length(); i++) {
-        final JSONObject dependencyJson = dependenciesJson.getJSONObject(i);
+    final List<Dependency> dependencies = StreamSupport.stream(json.optJSONArray("dependencies").spliterator(), false)
+      .map(obj -> (JSONObject)obj)
+      .map(dependencyJson -> {
         final String name = dependencyJson.getString("name");
         final String title = dependencyNameToTitleMap.getOrDefault(name, name);
-        final Dependency dependency = new Dependency(
+        return new Dependency(
           name,
           title,
           dependencyJson.optBoolean("optional", false),
           dependencyJson.optString("version", null)
         );
-        dependencies.add(dependency);
-      }
-    }
+      }).collect(Collectors.toList());
     plugin.setDependencies(dependencies);
-    final List<Maintainer> maintainers = new ArrayList<>();
-    final JSONArray developersJson = json.getJSONArray("developers");
-    if (developersJson != null) {
-      StreamSupport.stream(developersJson.spliterator(), false).forEach((obj) -> {
-        final JSONObject developerJson = (JSONObject)obj;
+    final List<Maintainer> maintainers = StreamSupport.stream(json.optJSONArray("developers").spliterator(), false)
+      .map(obj -> (JSONObject)obj)
+      .map(developerJson -> {
         final String name = developerJson.optString("name", null);
         final String email = developerJson.optString("email", null);
         final String developerId = developerJson.optString("developerId", (name != null ? name : email));
-        final Maintainer maintainer = new Maintainer(
+        return new Maintainer(
           developerId,
           name,
           email
         );
-        maintainers.add(maintainer);
-      });
-    }
+      }).collect(Collectors.toList());
     plugin.setMaintainers(maintainers);
     if (json.optString("buildDate", null) != null) {
       final LocalDate buildDate = LocalDate.parse(json.getString("buildDate"), BUILD_DATE_FORMATTER);
@@ -206,36 +189,50 @@ public class GeneratePluginData {
     }
     final Stats stats = parseStatistics(plugin.getName(), json, statisticsPath);
     plugin.setStats(stats);
-    if (json.optString("scm", "").endsWith("github.com")) {
-      final String name = plugin.getName().endsWith("-plugin") ? plugin.getName() : plugin.getName() + "-plugin";
-      final String issues = "http://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&reset=true&jqlQuery=project+%3D+JENKINS+AND+status+in+%28Open%2C+%22In+Progress%22%2C+Reopened%29+AND+component+%3D+%27" + name + "%27";
+    final Scm scm = parseScm(plugin, json.optString("scm", ""));
+    plugin.setScm(scm);
+    if (warningsMap.containsKey(plugin.getName())) {
+      final List<SecurityWarning> warnings = warningsMap.get(plugin.getName()).stream()
+        .map(warningJson ->
+          StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false)
+            .map(obj -> (JSONObject) obj)
+            .map(versionJson -> {
+              final boolean active = Pattern.compile(versionJson.getString("pattern")).matcher(plugin.getVersion()).matches();
+              return new SecurityWarning(
+                warningJson.getString("id"),
+                warningJson.getString("message"),
+                warningJson.getString("url"),
+                active,
+                versionJson.optString("firstVersion", null),
+                versionJson.optString("lastVersion", null)
+              );
+            }).collect(Collectors.toList())
+        )
+        .collect(Collectors.toList())
+        .stream()
+        .collect(ArrayList::new, List::addAll, List::addAll);
+      plugin.setSecurityWarnings(warnings);
+    }
+    return plugin;
+  }
+
+  private Scm parseScm(Plugin plugin, String scmString) {
+    final Scm scm = new Scm();
+    final String name = plugin.getName().endsWith("-plugin") ? plugin.getName() : plugin.getName() + "-plugin";
+    final String issues = "http://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&reset=true&jqlQuery=project+%3D+JENKINS+AND+status+in+%28Open%2C+%22In+Progress%22%2C+Reopened%29+AND+component+%3D+%27" + name + "%27";
+    scm.setIssues(issues);
+    if (scmString.endsWith("github.com")) {
       final String link = "https://github.com/jenkinsci/" + name;
       final String baseCompareUrl = String.format("%s/compare/%s-", link, plugin.getName());
       final String inLatestRelease = String.format("%s%s...%s-%s", baseCompareUrl, plugin.getPreviousVersion(), plugin.getName(), plugin.getVersion());
       final String sinceLatestRelease = String.format("%s%s...master", baseCompareUrl, plugin.getVersion());
       final String pullRequests = link + "/pulls";
-      plugin.setScm(new Scm(issues, link, inLatestRelease, sinceLatestRelease, pullRequests));
+      scm.setLink(link);
+      scm.setInLatestRelease(inLatestRelease);
+      scm.setSinceLatestRelease(sinceLatestRelease);
+      scm.setPullRequests(pullRequests);
     }
-    if (warningsMap.containsKey(plugin.getName())) {
-      final List<SecurityWarning> warnings = new ArrayList<>();
-      for (JSONObject warningJson : warningsMap.get(plugin.getName())) {
-        StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false).forEach((obj) -> {
-          final JSONObject versionJson = (JSONObject)obj;
-          final boolean active = Pattern.compile(versionJson.getString("pattern")).matcher(plugin.getVersion()).matches();
-          final SecurityWarning warning = new SecurityWarning(
-            warningJson.getString("id"),
-            warningJson.getString("message"),
-            warningJson.getString("url"),
-            active,
-            versionJson.optString("firstVersion", null),
-            versionJson.optString("lastVersion", null)
-          );
-          warnings.add(warning);
-        });
-      }
-      plugin.setSecurityWarnings(warnings);
-    }
-    return plugin;
+    return scm;
   }
 
   private Stats parseStatistics(String name, JSONObject json, Path statisticsPath) {
@@ -249,25 +246,25 @@ public class GeneratePluginData {
         final JSONObject installationsPercentage = statsJson.getJSONObject("installationsPercentage");
         final JSONObject installationsPerVersion = statsJson.getJSONObject("installationsPerVersion");
         final JSONObject installationsPercentagePerVersion = statsJson.getJSONObject("installationsPercentagePerVersion");
-        stats.setInstallations(installations.keySet().stream().map((timestamp) ->
+        stats.setInstallations(installations.keySet().stream().map(timestamp ->
           new Installation(
             Long.valueOf(timestamp),
             installations.getInt(timestamp)
           )
         ).sorted(Comparator.comparingLong(Installation::getTimestamp)).collect(Collectors.toList()));
-        stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map((timestamp) ->
+        stats.setInstallationsPercentage(installationsPercentage.keySet().stream().map(timestamp ->
           new InstallationPercentage(
             Long.valueOf(timestamp),
             installationsPercentage.getDouble(timestamp)
           )
         ).sorted(Comparator.comparing(InstallationPercentage::getTimestamp)).collect(Collectors.toList()));
-        stats.setInstallationsPerVersion(installationsPerVersion.keySet().stream().map((version) ->
+        stats.setInstallationsPerVersion(installationsPerVersion.keySet().stream().map(version ->
           new InstallationVersion(
             version,
             installationsPerVersion.getInt(version)
           )
         ).sorted(Comparator.comparing(InstallationVersion::getVersion)).collect(Collectors.toList()));
-        stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map((version) ->
+        stats.setInstallationsPercentagePerVersion(installationsPercentagePerVersion.keySet().stream().map(version ->
           new InstallationPercentageVersion(
             version,
             installationsPercentagePerVersion.getDouble(version)
@@ -302,54 +299,34 @@ public class GeneratePluginData {
   }
 
   private Map<String, String> buildLabelToCategoryMap() {
-    final JSONArray categories;
-    final Map<String, String> result = new HashMap<>();
     try {
       final ClassLoader cl = getClass().getClassLoader();
       final File file = new File(cl.getResource("categories.json").getFile());
-      categories = new JSONObject(FileUtils.readFileToString(file, StandardCharsets.UTF_8)).getJSONArray("categories");
+      final JSONArray categories = new JSONObject(FileUtils.readFileToString(file, StandardCharsets.UTF_8)).getJSONArray("categories");
+      return StreamSupport.stream(categories.spliterator(), false)
+        .map(obj -> (JSONObject)obj)
+        .map(category -> StreamSupport.stream(category.getJSONArray("labels").spliterator(), false)
+          .map(obj -> (String)obj)
+          .collect(Collectors.toMap(Function.identity(), label -> category.getString("id")))
+        )
+        .flatMap(map -> map.entrySet().stream())
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     } catch (Exception e) {
-      return Collections.emptyMap();
-    }
-    try {
-      for (int i = 0; i < categories.length(); i++) {
-        final JSONObject category = categories.getJSONObject(i);
-        final JSONArray labels = category.getJSONArray("labels");
-        for (int j = 0; j < labels.length(); j++) {
-          result.put(labels.getString(j), category.getString("id"));
-        }
-      }
-      return result;
-    } catch (JSONException e) {
       return Collections.emptyMap();
     }
   }
 
   private Map<String, String> buildDependencyNameToTitleMap(JSONObject pluginsJson) {
-    final Map<String, String> result = new HashMap<>();
-    for (String key : pluginsJson.keySet()) {
-      final JSONObject plugin = pluginsJson.getJSONObject(key);
-      result.put(plugin.getString("name"), plugin.getString("title"));
-    }
-    return result;
+    return pluginsJson.keySet().stream()
+      .map(pluginsJson::getJSONObject)
+      .collect(Collectors.toMap(plugin -> plugin.getString("name"), plugin -> plugin.getString("title")));
   }
 
-  private Map<String, List<JSONObject>> buildNametoWarningsMap(JSONArray warningsJson) {
-    final Map<String, List<JSONObject>> result = new HashMap<>();
-    if (warningsJson != null) {
-      StreamSupport.stream(warningsJson.spliterator(), false).forEach((obj) -> {
-        final JSONObject warning = (JSONObject)obj;
-        final String type = warning.getString("type");
-        if (type.equalsIgnoreCase("plugin")) {
-          final List<JSONObject> warnings = result.getOrDefault(warning.getString("name"), new ArrayList<>());
-          warnings.add(warning);
-          result.put(warning.getString("name"), warnings);
-        }
-      });
-    } else {
-      logger.info("No security warnings found in update center");
-    }
-    return result;
+  private Map<String, List<JSONObject>> buildNameToWarningsMap(JSONArray warningsJson) {
+    return StreamSupport.stream(warningsJson.spliterator(), false)
+      .map(obj -> (JSONObject)obj)
+      .filter(warning -> warning.getString("type").equalsIgnoreCase("plugin"))
+      .collect(Collectors.toMap(warning -> warning.getString("name"), Arrays::asList, (o, n) -> { o.addAll(n); return o; }));
   }
 
 }

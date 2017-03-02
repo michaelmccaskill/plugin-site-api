@@ -4,6 +4,7 @@ import io.jenkins.plugins.models.Plugin;
 import io.jenkins.plugins.services.DatastoreService;
 import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.WikiService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +42,7 @@ public class PluginEndpoint {
     try {
       final Plugin plugin = datastoreService.getPlugin(name);
       if (plugin != null) {
-        if (plugin.getWiki() != null &&
-          (plugin.getWiki().getUrl() != null && !plugin.getWiki().getUrl().isEmpty())) {
+        if (plugin.getWiki() != null && StringUtils.isNotBlank(plugin.getWiki().getUrl())) {
           final String content = wikiService.getWikiContent(plugin.getWiki().getUrl());
           plugin.getWiki().setContent(content);
         }

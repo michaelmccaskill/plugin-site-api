@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +45,7 @@ public class HttpClientWikiService implements WikiService {
         @Override
         public String load(String url) throws Exception {
           // Load the wiki content then clean it
-          final String rawContent = startGetWikiContent(url);
+          final String rawContent = doGetWikiContent(url);
           return cleanWikiContent(rawContent);
         }
       });
@@ -58,60 +57,30 @@ public class HttpClientWikiService implements WikiService {
       try {
         // This is what fires the CacheLoader that's defined in the postConstruct.
         return wikiContentCache.get(url);
-      } catch (ExecutionException e) {
+      } catch (Exception e) {
         logger.error("Problem getting wiki content", e);
-        throw new ServiceException("Problem getting wiki content", e);
+        return null;
       }
     } else {
       return null;
     }
   }
 
-  private String startGetWikiContent(String url) throws ServiceException {
-    final CloseableHttpClient httpClient = HttpClients.createDefault();
-    try {
-      return doGetWikiContent(httpClient, url, true);
+  private String doGetWikiContent(String url) {
+    final HttpGet get = new HttpGet(url);
+    try (final CloseableHttpClient httpClient = HttpClients.createDefault(); final CloseableHttpResponse response = httpClient.execute(get)) {
+      if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+        final HttpEntity entity = response.getEntity();
+        final String html = EntityUtils.toString(entity);
+        EntityUtils.consume(entity);
+        return html;
+      } else {
+        logger.warn("Unable to get content from {} - returned status code {}", url, response.getStatusLine().getStatusCode());
+        return null;
+      }
     } catch (Exception e) {
       logger.error("Problem getting wiki content", e);
-      throw new ServiceException("Problem getting wiki content", e);
-    } finally {
-      try {
-        httpClient.close();
-      } catch (IOException e) {
-        logger.warn("Problem closing HttpClient", e);
-      }
-    }
-  }
-
-  private String doGetWikiContent(CloseableHttpClient httpClient, String url, boolean follow) throws Exception {
-    final HttpGet get = new HttpGet(url);
-    final CloseableHttpResponse response = httpClient.execute(get);
-    try {
-      switch (response.getStatusLine().getStatusCode()) {
-        case HttpStatus.SC_MOVED_PERMANENTLY:
-        case HttpStatus.SC_MOVED_TEMPORARILY:
-        case HttpStatus.SC_SEE_OTHER:
-          if (follow) {
-            return doGetWikiContent(httpClient, response.getFirstHeader("Location").getValue(), false);
-          } else {
-            logger.warn("Already tried to follow to get wiki content.");
-            return null;
-          }
-        case HttpStatus.SC_OK:
-          final HttpEntity entity = response.getEntity();
-          final String html = EntityUtils.toString(entity);
-          EntityUtils.consume(entity);
-          return html;
-        default:
-          logger.warn("Unable to get content from " + url);
-          return null;
-      }
-    } finally {
-      try {
-        response.close();
-      } catch (IOException e) {
-        logger.warn("Problem closing response", e);
-      }
+      return null;
     }
   }
 
@@ -131,8 +100,8 @@ public class HttpClientWikiService implements WikiService {
     // This removes specific Confluence elements not needed by the front end
     wikiContent.getElementsByClass("table-wrap").remove();
     // Replace href/src with the wiki url
-    wikiContent.getElementsByAttribute("href").forEach((element) -> replaceAttribute(element, "href"));
-    wikiContent.getElementsByAttribute("src").forEach((element) -> replaceAttribute(element, "src"));
+    wikiContent.getElementsByAttribute("href").forEach(element -> replaceAttribute(element, "href"));
+    wikiContent.getElementsByAttribute("src").forEach(element -> replaceAttribute(element, "src"));
     return wikiContent.html();
   }
 

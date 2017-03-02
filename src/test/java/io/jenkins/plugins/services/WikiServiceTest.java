@@ -32,17 +32,24 @@ public class WikiServiceTest {
   }
 
   @Test
+  public void testGetWikiContentNon200() {
+    final String url = "http://httpstat.us/500";
+    final String content = wikiService.getWikiContent(url);
+    Assert.assertNull(content);
+  }
+
+  @Test
   public void testCleanWikiContent() throws IOException {
     final File file = new File("src/test/resources/wiki_content.html");
     final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     final String cleanContent = wikiService.cleanWikiContent(content);
     Assert.assertNotNull("Wiki content is null", cleanContent);
     final Document html = Jsoup.parseBodyFragment(cleanContent);
-    html.getElementsByAttribute("href").forEach((element) -> {
+    html.getElementsByAttribute("href").forEach(element -> {
       final String value = element.attr("href");
       Assert.assertFalse("Wiki content not clean - href references to root : " + value, value.startsWith("/"));
     });
-    html.getElementsByAttribute("src").forEach((element) -> {
+    html.getElementsByAttribute("src").forEach(element -> {
       final String value = element.attr("src");
       Assert.assertFalse("Wiki content not clean - src references to root : " + value, value.startsWith("/"));
     });
