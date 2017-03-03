@@ -7,7 +7,7 @@ properties([
 ])
 
 def isPullRequest = !!(env.CHANGE_ID)
-def isMultibranch = !!(env.BRANCH_NAME)
+def pushToDocker = !isPullRequest && env.BRANCH_NAME == 'master'
 String shortCommit = ''
 
 node('docker') {
@@ -71,7 +71,8 @@ node('docker') {
             stage('Containerize') {
                 container = docker.build("jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}",
                                         '--no-cache --rm deploy')
-                if (!(isPullRequest || isMultibranch)) {
+                if (pushToDocker) {
+                    echo "Pushing container jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}"
                     container.push()
                 }
             }
@@ -92,7 +93,8 @@ node('docker') {
             }
 
             stage('Tag container as latest') {
-                if (!(isPullRequest || isMultibranch)) {
+                if (pushToDocker) {
+                    echo "Tagging jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit} as latest"
                     container.push('latest')
                 }
             }
