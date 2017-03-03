@@ -87,7 +87,7 @@ node('docker') {
                      * proper wget installed already inside of it
                      */
                     docker.image('maven').inside("--link ${api.id}:api") {
-                        sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 http://api:8080/versions'
+                        sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 --tries=5 http://api:8080/versions'
                     }
                 }
             }
