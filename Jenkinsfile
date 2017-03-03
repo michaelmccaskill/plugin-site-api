@@ -72,6 +72,7 @@ node('docker') {
                 container = docker.build("jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}",
                                         '--no-cache --rm deploy')
                 if (!(isPullRequest || isMultibranch)) {
+                    echo "Pushing container jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}"
                     container.push()
                 }
             }
@@ -93,6 +94,7 @@ node('docker') {
 
             stage('Tag container as latest') {
                 if (!(isPullRequest || isMultibranch)) {
+                    echo "Tagging jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit} as latest"
                     container.push('latest')
                 }
             }
