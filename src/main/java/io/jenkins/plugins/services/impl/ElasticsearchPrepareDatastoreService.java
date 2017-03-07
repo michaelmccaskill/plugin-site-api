@@ -145,7 +145,8 @@ public class ElasticsearchPrepareDatastoreService implements PrepareDatastoreSer
     }
   }
 
-  private LocalDateTime getCurrentCreatedAt() {
+  @Override
+  public LocalDateTime getCurrentCreatedAt() {
     if (client.admin().indices().prepareAliasesExist(ALIAS).get().exists()) {
       final String index = client.admin().indices().prepareGetAliases(ALIAS).get().getAliases().iterator().next().key;
       final String timestamp = index.substring(INDEX_PREFIX.length());
