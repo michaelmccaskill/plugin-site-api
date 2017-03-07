@@ -378,7 +378,7 @@ public class GeneratePluginData {
         return httpClient.execute(new HttpGet(url), handler);
       } catch (Exception e) {
         logger.error("Problem communicating with {}", url, e);
-        throw new RuntimeException(e);
+        return Collections.emptyMap();
       } finally {
         try {
           httpClient.close();
