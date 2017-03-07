@@ -7,7 +7,7 @@ properties([
 ])
 
 def isPullRequest = !!(env.CHANGE_ID)
-def pushToDocker = !isPullRequest && env.BRANCH_NAME == 'master'
+def pushToDocker = infra.isTrusted() && !isPullRequest && env.BRANCH_NAME == 'master'
 String shortCommit = ''
 
 node('docker') {
