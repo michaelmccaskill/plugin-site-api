@@ -2,12 +2,12 @@
 
 /* Only keep the 10 most recent builds. */
 properties([
-    [$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']],
+    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')),
     pipelineTriggers([[$class:"SCMTrigger", scmpoll_spec:"H/10 * * * *"]]),
 ])
 
 def isPullRequest = !!(env.CHANGE_ID)
-def isMultibranch = !!(env.BRANCH_NAME)
+def pushToDocker = !isPullRequest && env.BRANCH_NAME == 'master'
 String shortCommit = ''
 
 node('docker') {
@@ -34,8 +34,10 @@ node('docker') {
 
     timestamps {
         stage('Generate Plugin Data') {
-            docker.image('maven').inside {
-                sh 'mvn -PgeneratePluginData'
+            withEnv([ 'PLUGIN_DOCUMENTATION_URL="https://updates.jenkins.io/plugin-documentation-urls.json"' ])
+              docker.image('maven').inside {
+                  sh 'mvn -PgeneratePluginData'
+              }
             }
         }
 
@@ -76,7 +78,7 @@ node('docker') {
             stage('Containerize') {
                 container = docker.build("jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}",
                                         '--no-cache --rm deploy')
-                if (!(isPullRequest || isMultibranch)) {
+                if (pushToDocker) {
                     echo "Pushing container jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}"
                     container.push()
                 }
@@ -92,13 +94,13 @@ node('docker') {
                      * proper wget installed already inside of it
                      */
                     docker.image('maven').inside("--link ${api.id}:api") {
-                        sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 http://api:8080/versions'
+                        sh 'wget --debug -O /dev/null --retry-connrefused --timeout 120 --tries=5 http://api:8080/versions'
                     }
                 }
             }
 
             stage('Tag container as latest') {
-                if (!(isPullRequest || isMultibranch)) {
+                if (pushToDocker) {
                     echo "Tagging jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit} as latest"
                     container.push('latest')
                 }

@@ -32,11 +32,28 @@ public class WikiServiceTest {
   }
 
   @Test
-  public void testGetWikiContentNon200() {
-    final String url = "http://httpstat.us/500";
+  public void testGetWikiContent404() {
+    final String url = "https://wiki.jenkins-ci.org/display/JENKINS/German+Translation?foo";
     final String content = wikiService.getWikiContent(url);
-    Assert.assertNull(content);
+    Assert.assertNotNull("Wiki content is null", content);
+    Assert.assertEquals(HttpClientWikiService.getNonWikiContent(url), content);
   }
+
+  @Test
+  public void testGetWikiContentNotJenkins() {
+    final String url = "https://www.google.com";
+    final String content = wikiService.getWikiContent(url);
+    Assert.assertNotNull("Wiki content is null", content);
+    Assert.assertEquals(HttpClientWikiService.getNonWikiContent(url), content);
+  }
+
+  @Test
+  public void testGetWikiContentNoUrl() {
+    final String content = wikiService.getWikiContent(null);
+    Assert.assertNotNull("Wiki content is null", content);
+    Assert.assertEquals(HttpClientWikiService.getNoDocumentationFound(), content);
+  }
+
 
   @Test
   public void testCleanWikiContent() throws IOException {

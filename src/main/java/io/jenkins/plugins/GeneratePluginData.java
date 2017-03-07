@@ -4,6 +4,8 @@ import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.*;
 import io.jenkins.plugins.utils.VersionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -55,17 +57,20 @@ public class GeneratePluginData {
   // java.time DateTimeFormatter.ISO_LOCAL_DATE_TIME uses nano-of-second where we're using milliseconds
   private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.US);
 
+  private static final UrlValidator URL_VALIDATOR = new UrlValidator(new String[] {"http","https"});
+
   public static void main(String[] args) {
     final GeneratePluginData generatePluginData = new GeneratePluginData();
     generatePluginData.generate();
   }
 
   public void generate() {
+    final Map<String, String> pluginToDocumentationUrlMap = buildPluginToDocumentationUrlMap();
     final JSONObject updateCenterJson = getUpdateCenterJson();
     final JSONObject pluginsJson = updateCenterJson.getJSONObject("plugins");
     final JSONArray warningsJson = updateCenterJson.getJSONArray("warnings");
     final Path statisticsPath = downloadStatistics();
-    final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath, warningsJson);
+    final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath, warningsJson, pluginToDocumentationUrlMap);
     writePluginsToFile(plugins);
   }
 
@@ -113,14 +118,15 @@ public class GeneratePluginData {
     }
   }
 
-  private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath, JSONArray warningsJson) {
+  private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath, JSONArray warningsJson,
+                                       Map<String, String> pluginToDocumentationUrlMap) {
     try {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       final Map<String, String> dependencyNameToTitleMap = buildDependencyNameToTitleMap(pluginsJson);
       final Map<String, List<JSONObject>> warnings = buildNameToWarningsMap(warningsJson);
       return pluginsJson.keySet().stream()
         .map(pluginsJson::getJSONObject)
-        .map(json -> parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings))
+        .map(json -> parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings, pluginToDocumentationUrlMap))
         .collect(Collectors.toList());
     } catch (Exception e) {
       logger.error("Problem generating plugins", e);
@@ -128,7 +134,9 @@ public class GeneratePluginData {
     }
   }
 
-  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap, Map<String, String> dependencyNameToTitleMap, Map<String, List<JSONObject>> warningsMap) {
+  private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap,
+                             Map<String, String> dependencyNameToTitleMap, Map<String, List<JSONObject>> warningsMap,
+                             Map<String, String> pluginToDocumentationUrlMap) {
     final Plugin plugin = new Plugin();
     plugin.setExcerpt(json.optString("excerpt", null));
     plugin.setGav(json.optString("gav", null));
@@ -139,7 +147,7 @@ public class GeneratePluginData {
     plugin.setTitle(json.optString("title", null));
     plugin.setUrl(json.optString("url", null));
     plugin.setVersion(json.optString("version", null));
-    plugin.setWiki(new Wiki(null, json.optString("wiki", null)));
+    plugin.setWiki(parseWiki(plugin.getName(), pluginToDocumentationUrlMap));
     final List<String> labels = StreamSupport.stream(json.optJSONArray("labels").spliterator(), false)
       .map(obj -> (String)obj)
       .collect(Collectors.toList());
@@ -286,6 +294,18 @@ public class GeneratePluginData {
     }
   }
 
+  private Wiki parseWiki(String plugin, Map<String, String> pluginToDocumentationUrlMap) {
+    final String url = verifyWikiBlacklist(pluginToDocumentationUrlMap.getOrDefault(plugin, null));
+    return new Wiki(null, url);
+  }
+
+  private String verifyWikiBlacklist(String url) {
+    if (StringUtils.isBlank(url)) {
+      return url;
+    }
+    return URL_VALIDATOR.isValid(url) ? url : null;
+  }
+
   private void writePluginsToFile(List<Plugin> plugins) {
     final File data = Paths.get(System.getProperty("user.dir"), "target", "plugins.json.gzip").toFile();
     try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(data)), StandardCharsets.UTF_8))) {
@@ -327,6 +347,48 @@ public class GeneratePluginData {
       .map(obj -> (JSONObject)obj)
       .filter(warning -> warning.getString("type").equalsIgnoreCase("plugin"))
       .collect(Collectors.toMap(warning -> warning.getString("name"), Arrays::asList, (o, n) -> { o.addAll(n); return o; }));
+  }
+
+  private Map<String, String> buildPluginToDocumentationUrlMap() {
+    if (System.getenv().containsKey("PLUGIN_DOCUMENTATION_URL")) {
+      final String url = StringUtils.trimToNull(System.getenv("PLUGIN_DOCUMENTATION_URL"));
+      if (url == null) {
+        throw new RuntimeException("Environment variable 'PLUGIN_DOCUMENTATION_URL' is empty");
+      }
+      final CloseableHttpClient httpClient = HttpClients.createDefault();
+      final ResponseHandler<Map<String, String>> handler = httpResponse -> {
+        final StatusLine status = httpResponse.getStatusLine();
+        if (status.getStatusCode() == 200) {
+          final HttpEntity entity = httpResponse.getEntity();
+          final String content = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+          try {
+            final JSONObject json = new JSONObject(content);
+            return json.keySet().stream()
+              .filter(key -> StringUtils.isNotBlank(json.getJSONObject(key).optString("url", null)))
+              .collect(Collectors.toMap(Function.identity(), key -> json.getJSONObject(key).getString("url")));
+          } catch (Exception e) {
+            logger.error("{} returned invalid JSON", url, e);
+            throw new ClientProtocolException(String.format("%s returned invalid JSON", url));
+          }
+        } else {
+          throw new ClientProtocolException(String.format("Unexpected response from %s - %s", url, status.toString()));
+        }
+      };
+      try {
+        return httpClient.execute(new HttpGet(url), handler);
+      } catch (Exception e) {
+        logger.error("Problem communicating with {}", url, e);
+        return Collections.emptyMap();
+      } finally {
+        try {
+          httpClient.close();
+        } catch (IOException e) {
+          logger.error("Problem closing httpClient", e);
+        }
+      }
+    } else {
+      throw new RuntimeException("Environment variable 'PLUGIN_DOCUMENTATION_URL' is required");
+    }
   }
 
 }

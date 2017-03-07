@@ -5,8 +5,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.jenkins.plugins.services.ServiceException;
 import io.jenkins.plugins.services.WikiService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -20,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.ExecutionException;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,33 +55,38 @@ public class HttpClientWikiService implements WikiService {
 
   @Override
   public String getWikiContent(String url) throws ServiceException {
-    if (url != null && !url.trim().isEmpty()) {
+    if (StringUtils.isNoneBlank(url)) {
+      if (!url.startsWith(WIKI_URL)) {
+        return getNonWikiContent(url);
+      }
       try {
         // This is what fires the CacheLoader that's defined in the postConstruct.
         return wikiContentCache.get(url);
       } catch (Exception e) {
         logger.error("Problem getting wiki content", e);
-        return null;
+        return getNonWikiContent(url);
       }
     } else {
-      return null;
+      return getNoDocumentationFound();
     }
   }
 
   private String doGetWikiContent(String url) {
     final HttpGet get = new HttpGet(url);
-    try (final CloseableHttpClient httpClient = HttpClients.createDefault(); final CloseableHttpResponse response = httpClient.execute(get)) {
+    try (final CloseableHttpClient httpClient = getHttpClient(); final CloseableHttpResponse response = httpClient.execute(get)) {
       if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
         final HttpEntity entity = response.getEntity();
         final String html = EntityUtils.toString(entity);
         EntityUtils.consume(entity);
         return html;
       } else {
-        logger.warn("Unable to get content from {} - returned status code {}", url, response.getStatusLine().getStatusCode());
+        final String msg = String.format("Unable to get content from %s - returned status code %d", url, response.getStatusLine().getStatusCode());
+        logger.warn(msg);
         return null;
       }
-    } catch (Exception e) {
-      logger.error("Problem getting wiki content", e);
+    } catch (IOException e) {
+      final String msg = "Problem getting wiki content";
+      logger.error(msg, e);
       return null;
     }
   }
@@ -110,6 +117,32 @@ public class HttpClientWikiService implements WikiService {
     if (attribute.startsWith("/")) {
       element.attr(attributeName, WIKI_URL + attribute);
     }
+  }
+
+  public static String getNonWikiContent(String url) {
+    final Element body = Jsoup.parseBodyFragment("<div></div>").body();
+    final Element div = body.select("div").first();
+    div.text("Documentation for this plugin is here: ");
+    final Element link = div.appendElement("a");
+    link.text(url);
+    link.attr("href", url);
+    return body.html();
+  }
+
+  public static String getNoDocumentationFound() {
+    final Element body = Jsoup.parseBodyFragment("<div></div>").body();
+    final Element div = body.select("div").first();
+    div.text("No documentation for this plugin could be found");
+    return body.html();
+  }
+
+  private CloseableHttpClient getHttpClient() {
+    final RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+      .setConnectionRequestTimeout(5000)
+      .setConnectTimeout(5000)
+      .setSocketTimeout(5000)
+      .build();
+    return HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
   }
 
 }
