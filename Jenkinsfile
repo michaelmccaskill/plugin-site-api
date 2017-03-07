@@ -18,8 +18,10 @@ node('docker') {
 
     stage('Generate') {
         timestamps {
-            docker.image('maven').inside {
-                sh 'mvn -PgeneratePluginData'
+            withEnv([ 'PLUGIN_DOCUMENTATION_URL="https://updates.jenkins.io/plugin-documentation-urls.json"' ]) {
+                docker.image('maven').inside {
+                    sh 'mvn -PgeneratePluginData'
+                }
             }
         }
     }
