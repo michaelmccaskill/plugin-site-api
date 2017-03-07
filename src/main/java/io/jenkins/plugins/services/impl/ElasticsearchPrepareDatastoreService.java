@@ -60,7 +60,8 @@ public class ElasticsearchPrepareDatastoreService implements PrepareDatastoreSer
 
   @Override
   public void schedulePopulateDataStore() {
-    scheduledExecutorService.scheduleWithFixedDelay(this::populateDataStore, 12, 12, TimeUnit.HOURS);
+    final int interval = Integer.valueOf(System.getenv().getOrDefault("POPULATE_DATASTORE_INTERVAL", "1"));
+    scheduledExecutorService.scheduleWithFixedDelay(this::populateDataStore, interval, interval, TimeUnit.HOURS);
   }
 
   private boolean shouldIndex(GeneratedPluginData data) {
