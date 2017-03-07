@@ -19,11 +19,6 @@ node('docker') {
         sh 'git rev-parse HEAD > GIT_COMMIT'
         shortCommit = readFile('GIT_COMMIT').take(6)
 
-        echo "env.CHANGE_ID '${env.CHANGE_ID}'"
-        echo "env.BRANCH_NAME '${env.BRANCH_NAME}'"
-        echo "isPullRequest ${isPullRequest}"
-        echo "isMultibranch ${isMultibranch}"
-
         dir('deploy/plugin-site') {
             def branch = env.BRANCH_NAME != 'master' ? 'develop' : 'master'
             echo 'Cloning the latest front-end site for baking our container'
