@@ -113,14 +113,13 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         if (searchOptions.getCore() != null) {
           filter.must(QueryBuilders.termQuery("requiredCore", searchOptions.getCore()));
         }
-        if (searchOptions.isOnlyNew()) {
-          filter.must(QueryBuilders.termQuery("isNew", true));
-        }
         queryBuilder.filter(filter);
       }
       requestBuilder.setQuery(queryBuilder);
       if (searchOptions.getSortBy() != null) {
         switch (searchOptions.getSortBy()) {
+          case FIRST_RELEASE:
+            requestBuilder.addSort(SortBuilders.fieldSort("firstRelease").order(SortOrder.DESC));
           case INSTALLED:
             requestBuilder.addSort(SortBuilders.fieldSort("stats.currentInstalls").setNestedPath("stats").order(SortOrder.DESC));
             break;

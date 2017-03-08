@@ -2,6 +2,7 @@ package io.jenkins.plugins;
 
 import io.jenkins.plugins.models.*;
 import io.jenkins.plugins.services.SearchOptions;
+import io.jenkins.plugins.services.SortBy;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.jetty.JettyTestContainerFactory;
@@ -67,7 +68,7 @@ public class RestAppIntegrationTest extends JerseyTest {
 
   @Test
   public void testGetPluginSecurityWarnings() {
-    final Plugin plugin = target("/plugin/cumcuber-reports").request().get(Plugin.class);
+    final Plugin plugin = target("/plugin/cucumber-reports").request().get(Plugin.class);
     Assert.assertNotNull("cucumber-reports plugin not found", plugin);
     Assert.assertEquals("cucumber-reports", plugin.getName());
     Assert.assertFalse("securityWarnings are empty", plugin.getSecurityWarnings().isEmpty());
@@ -78,6 +79,13 @@ public class RestAppIntegrationTest extends JerseyTest {
     final Plugins plugins = target("/plugins").queryParam("q", "git").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+  }
+
+  @Test
+  public void testGetPluginsSortByFirstRelease() {
+    final Plugins plugins = target("/plugins").queryParam("sort", "first_release").request().get(Plugins.class);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.FIRST_RELEASE not correct", plugins.getPlugins().get(0).getFirstRelease().isAfter(plugins.getPlugins().get(1).getFirstRelease()));
   }
 
   @Test
@@ -177,15 +185,6 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testGetPluginsForOnlyNew() {
-    final Plugins plugins = target("/plugins").queryParam("new", "true").request().get(Plugins.class);
-    Assert.assertNotNull("Search for requiredCore is null", plugins);
-    for (Plugin plugin : plugins.getPlugins()) {
-      Assert.assertTrue("Found plugin that isn't new", plugin.isNew());
-    }
-  }
-
-  @Test
   public void testGetPluginsMostInstalled() {
     final Plugins plugins = target("/plugins/installed").request().get(Plugins.class);
     Assert.assertNotNull("Most installed null", plugins);
@@ -197,12 +196,10 @@ public class RestAppIntegrationTest extends JerseyTest {
   @Test
   public void testGetPluginsNew() {
     final Plugins plugins = target("/plugins/new").request().get(Plugins.class);
-    Assert.assertNotNull("New null", plugins);
+    Assert.assertNotNull("New plugins null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
-    plugins.getPlugins().forEach(plugin -> {
-      Assert.assertTrue("Plugin not new", plugin.isNew());
-    });
-    Assert.assertEquals("Most installed limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
+    Assert.assertTrue("New plugins order not correct", plugins.getPlugins().get(0).getFirstRelease().isAfter(plugins.getPlugins().get(1).getFirstRelease()));
+    Assert.assertEquals("New plugins limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
   }
 
   @Test

@@ -25,9 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -61,6 +59,9 @@ public class GeneratePluginData {
 
   private static final UrlValidator URL_VALIDATOR = new UrlValidator(new String[] {"http","https"});
 
+  private static final String UPDATE_CENTER_FILE = "update-center.actual.json";
+  private static final String RELEASE_HISTORY_FILE = "release-history.json";
+
   public static void main(String[] args) {
     final GeneratePluginData generatePluginData = new GeneratePluginData();
     generatePluginData.generate();
@@ -68,15 +69,18 @@ public class GeneratePluginData {
 
   public void generate() {
     final Map<String, String> pluginToDocumentationUrlMap = buildPluginToDocumentationUrlMap();
-    final JSONObject updateCenterJson = getUpdateCenterJson();
+    final JSONObject updateCenterJson = getUpdateCenterJson(UPDATE_CENTER_FILE);
     final JSONObject pluginsJson = updateCenterJson.getJSONObject("plugins");
     final JSONArray warningsJson = updateCenterJson.getJSONArray("warnings");
+    final JSONObject releaseHistory = getUpdateCenterJson(RELEASE_HISTORY_FILE);
+    final Map<String, LocalDateTime> gavToFirstReleaseMap = buildGavToFirstReleaseMap(releaseHistory);
     final Path statisticsPath = downloadStatistics();
-    final List<Plugin> plugins = generatePlugins(pluginsJson, statisticsPath, warningsJson, pluginToDocumentationUrlMap);
+    final List<Plugin> plugins = generatePlugins(
+        pluginsJson, statisticsPath, warningsJson, pluginToDocumentationUrlMap, gavToFirstReleaseMap);
     writePluginsToFile(plugins);
   }
 
-  private JSONObject getUpdateCenterJson() {
+  private JSONObject getUpdateCenterJson(String file) {
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     final ResponseHandler<JSONObject> updateCenterHandler = httpResponse -> {
       final StatusLine status = httpResponse.getStatusLine();
@@ -84,7 +88,7 @@ public class GeneratePluginData {
         final HttpEntity entity = httpResponse.getEntity();
         final String content = EntityUtils.toString(entity, StandardCharsets.UTF_8);
         try {
-          return new JSONObject(String.join("", content.split("\n")[1]));
+          return new JSONObject(content);
         } catch (Exception e) {
           throw new ClientProtocolException("Update center returned invalid JSON");
         }
@@ -92,9 +96,9 @@ public class GeneratePluginData {
         throw new ClientProtocolException("Unexpected response from update center - " + status.toString());
       }
     };
-    logger.info("Begin downloading plugins from update center");
+    logger.info("Begin downloading {} from update center", file);
     try {
-      return httpClient.execute(new HttpGet("https://updates.jenkins.io/current/update-center.json"), updateCenterHandler);
+      return httpClient.execute(new HttpGet("https://updates.jenkins.io/current/" + file), updateCenterHandler);
     } catch (Exception e) {
       logger.error("Problem communicating with update center", e);
       throw new RuntimeException(e);
@@ -121,14 +125,16 @@ public class GeneratePluginData {
   }
 
   private List<Plugin> generatePlugins(JSONObject pluginsJson, Path statisticsPath, JSONArray warningsJson,
-                                       Map<String, String> pluginToDocumentationUrlMap) {
+                                       Map<String, String> pluginToDocumentationUrlMap,
+                                       Map<String, LocalDateTime> gavToFirstReleaseMap) {
     try {
       final Map<String, String> labelToCategoryMap = buildLabelToCategoryMap();
       final Map<String, String> dependencyNameToTitleMap = buildDependencyNameToTitleMap(pluginsJson);
       final Map<String, List<JSONObject>> warnings = buildNameToWarningsMap(warningsJson);
       return pluginsJson.keySet().stream()
         .map(pluginsJson::getJSONObject)
-        .map(json -> parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings, pluginToDocumentationUrlMap))
+        .map(json -> parsePlugin(json, statisticsPath, labelToCategoryMap, dependencyNameToTitleMap, warnings,
+            pluginToDocumentationUrlMap, gavToFirstReleaseMap))
         .collect(Collectors.toList());
     } catch (Exception e) {
       logger.error("Problem generating plugins", e);
@@ -138,7 +144,7 @@ public class GeneratePluginData {
 
   private Plugin parsePlugin(JSONObject json, Path statisticsPath, Map<String, String> labelToCategoryMap,
                              Map<String, String> dependencyNameToTitleMap, Map<String, List<JSONObject>> warningsMap,
-                             Map<String, String> pluginToDocumentationUrlMap) {
+                             Map<String, String> pluginToDocumentationUrlMap, Map<String, LocalDateTime> gavToFirstReleaseMap) {
     final Plugin plugin = new Plugin();
     plugin.setExcerpt(json.optString("excerpt", null));
     plugin.setGav(json.optString("gav", null));
@@ -224,10 +230,7 @@ public class GeneratePluginData {
       plugin.setSecurityWarnings(warnings);
     }
     // WEBSITE-309
-    if (plugin.getPreviousTimestamp() == null && plugin.getReleaseTimestamp() != null &&
-        ChronoUnit.DAYS.between(plugin.getReleaseTimestamp(), LocalDateTime.now()) <= 30) {
-      plugin.setNew(true);
-    }
+    plugin.setFirstRelease(gavToFirstReleaseMap.getOrDefault(getGavKey(plugin.getGav()), null));
     return plugin;
   }
 
@@ -396,6 +399,30 @@ public class GeneratePluginData {
     } else {
       throw new RuntimeException("Environment variable 'PLUGIN_DOCUMENTATION_URL' is required");
     }
+  }
+
+  private String getGavKey(String gav) {
+    return StringUtils.substringBeforeLast(gav, ":");
+  }
+
+  private Map<String, LocalDateTime> buildGavToFirstReleaseMap(JSONObject root) {
+    final Map<String, LocalDateTime> result = new HashMap<>();
+    final JSONArray releaseHistory = root.getJSONArray("releaseHistory");
+    // Flatten out "releaseHistory.releases" to "releases" where "releases.firstRelease" is true
+    return StreamSupport.stream(releaseHistory.spliterator(), false)
+      .map(obj -> (JSONObject)obj)
+      .map(entry -> {
+        final JSONArray releases = entry.getJSONArray("releases");
+        return StreamSupport.stream(releases.spliterator(), false)
+          .map(obj -> (JSONObject)obj)
+          .filter(release -> release.optBoolean("firstRelease", false) && release.has("gav"))
+          .collect(Collectors.toMap(
+            release -> getGavKey(release.getString("gav")),
+            release -> LocalDateTime.from(Instant.ofEpochMilli(release.getLong("timestamp")).atZone(ZoneId.of("UTC")))));
+      })
+      .collect(Collectors.toList()).stream()
+      .flatMap(map -> map.entrySet().stream())
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
 }

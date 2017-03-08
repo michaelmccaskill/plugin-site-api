@@ -49,8 +49,7 @@ public class PluginsEndpoint {
       @QueryParam("maintainers") Set<String> maintainers,
       @QueryParam("core")String core,
       @DefaultValue("50") @QueryParam("limit") int limit,
-      @DefaultValue("1") @QueryParam("page") int page,
-      @DefaultValue("false") @QueryParam("onlyNew") Boolean onlyNew) {
+      @DefaultValue("1") @QueryParam("page") int page) {
     try {
       return datastoreService.search(
         new SearchOptions.Builder()
@@ -62,7 +61,6 @@ public class PluginsEndpoint {
           .withCore(core)
           .withLimit(limit)
           .withPage(page)
-          .withOnlyNew(onlyNew)
           .build()
       );
     } catch (ServiceException e) {
@@ -107,9 +105,8 @@ public class PluginsEndpoint {
     try {
       return datastoreService.search(
         new SearchOptions.Builder()
-          .withSortBy(SortBy.UPDATED)
+          .withSortBy(SortBy.FIRST_RELEASE)
           .withLimit(limit)
-          .withOnlyNew(true)
           .build()
       );
     } catch (ServiceException e) {

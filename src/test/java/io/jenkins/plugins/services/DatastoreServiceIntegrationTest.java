@@ -103,6 +103,13 @@ public class DatastoreServiceIntegrationTest {
   }
 
   @Test
+  public void testSearchSortByFirstRelease() {
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withSortBy(SortBy.FIRST_RELEASE).build());
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    Assert.assertTrue("SortBy.FIRST_RELEASE not correct", plugins.getPlugins().get(0).getFirstRelease().isAfter(plugins.getPlugins().get(1).getFirstRelease()));
+  }
+
+  @Test
   public void testSearchSortByInstalled() {
     final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.INSTALLED).build());
     Assert.assertNotNull("Search for 'git' sort by installs is null", plugins);
@@ -195,15 +202,6 @@ public class DatastoreServiceIntegrationTest {
       if (!plugin.getRequiredCore().equals("1.505")) {
         Assert.fail("Found plugin with requiredCore not '1.505'");
       }
-    }
-  }
-
-  @Test
-  public void testSearchOnlyNew() {
-    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withOnlyNew(true).build());
-    Assert.assertNotNull("Search for requiredCore is null", plugins);
-    for (Plugin plugin : plugins.getPlugins()) {
-      Assert.assertTrue("Found plugin that isn't new", plugin.isNew());
     }
   }
 

@@ -23,7 +23,6 @@ public class SearchOptions {
     private String core;
     private Integer limit;
     private Integer page;
-    private Boolean onlyNew;
 
     public Builder() {
       this.query = null;
@@ -34,7 +33,6 @@ public class SearchOptions {
       this.core = null;
       this.limit = 50;
       this.page = 1;
-      this.onlyNew = false;
     }
 
     public Builder withQuery(String query) {
@@ -110,14 +108,9 @@ public class SearchOptions {
       return this;
     }
 
-    public Builder withOnlyNew(Boolean onlyNew) {
-      this.onlyNew = BooleanUtils.toBoolean(onlyNew);
-      return this;
-    }
-
     public SearchOptions build() {
       return new SearchOptions(
-        query, sortBy, categories, labels, maintainers, core, limit, page, onlyNew
+        query, sortBy, categories, labels, maintainers, core, limit, page
       );
     }
 
@@ -131,10 +124,9 @@ public class SearchOptions {
   private String core;
   private Integer limit;
   private Integer page;
-  private Boolean onlyNew;
 
   private SearchOptions(String query, SortBy sortBy, Set<String> categories, Set<String> labels, Set<String> maintainers,
-                       String core, Integer limit, Integer page, Boolean onlyNew) {
+                       String core, Integer limit, Integer page) {
     this.query = query;
     this.sortBy = sortBy;
     this.categories = categories;
@@ -143,7 +135,6 @@ public class SearchOptions {
     this.core = core;
     this.limit = limit;
     this.page = page;
-    this.onlyNew = onlyNew;
   }
 
   public String getQuery() {
@@ -178,13 +169,8 @@ public class SearchOptions {
     return page;
   }
 
-  public Boolean isOnlyNew() {
-    return onlyNew;
-  }
-
   public Boolean hasFilters() {
     return !getMaintainers().isEmpty() || !getCategories().isEmpty()
-      || getCore() != null || !getLabels().isEmpty()
-      || onlyNew;
+      || getCore() != null || !getLabels().isEmpty();
   }
 }
