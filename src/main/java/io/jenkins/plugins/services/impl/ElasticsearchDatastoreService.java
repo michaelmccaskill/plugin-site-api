@@ -78,8 +78,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
       }
-      if (!searchOptions.getMaintainers().isEmpty() || !searchOptions.getCategories().isEmpty()
-            || searchOptions.getCore() != null || !searchOptions.getLabels().isEmpty()) {
+      if (searchOptions.hasFilters()) {
         final BoolQueryBuilder filter = QueryBuilders.boolQuery();
         if (!searchOptions.getCategories().isEmpty() && !searchOptions.getLabels().isEmpty()) {
           filter.must(
@@ -113,6 +112,9 @@ public class ElasticsearchDatastoreService implements DatastoreService {
         }
         if (searchOptions.getCore() != null) {
           filter.must(QueryBuilders.termQuery("requiredCore", searchOptions.getCore()));
+        }
+        if (searchOptions.isOnlyNew()) {
+          filter.must(QueryBuilders.termQuery("isNew", true));
         }
         queryBuilder.filter(filter);
       }

@@ -1,6 +1,7 @@
 package io.jenkins.plugins;
 
 import io.jenkins.plugins.models.*;
+import io.jenkins.plugins.services.SearchOptions;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.jetty.JettyTestContainerFactory;
@@ -65,6 +66,14 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
+  public void testGetPluginSecurityWarnings() {
+    final Plugin plugin = target("/plugin/cumcuber-reports").request().get(Plugin.class);
+    Assert.assertNotNull("cucumber-reports plugin not found", plugin);
+    Assert.assertEquals("cucumber-reports", plugin.getName());
+    Assert.assertFalse("securityWarnings are empty", plugin.getSecurityWarnings().isEmpty());
+  }
+
+  @Test
   public void testGetPlugins() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
@@ -72,7 +81,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchSortByInstalled() {
+  public void testGetPluginsSortByInstalled() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "installed").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
@@ -80,7 +89,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchSortByName() {
+  public void testGetPluginsSortByName() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "name").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
@@ -88,14 +97,14 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchSortByRelevance() {
+  public void testGetPluginsSortByRelevance() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "relevance").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
   }
 
   @Test
-  public void testSearchSortByTitle() {
+  public void testGetPluginsSortByTitle() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "title").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
@@ -103,7 +112,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchSortByTrend() {
+  public void testGetPluginsSortByTrend() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "trend").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
@@ -111,7 +120,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchSortByUpdated() {
+  public void testGetPluginsSortByUpdated() {
     final Plugins plugins = target("/plugins").queryParam("q", "git").queryParam("sort", "updated").request().get(Plugins.class);
     Assert.assertNotNull("Search for 'git' null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
@@ -119,7 +128,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchCategories() {
+  public void testGetPluginsForCategories() {
     final Plugins plugins = target("/plugins").queryParam("categories", "scm").request().get(Plugins.class);
     Assert.assertNotNull("Search for categories 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
@@ -131,7 +140,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchLabels() {
+  public void testGetPluginsForLabels() {
     final Plugins plugins = target("/plugins").queryParam("labels", "scm").request().get(Plugins.class);
     Assert.assertNotNull("Search for labels 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
@@ -143,7 +152,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchMaintainers() {
+  public void testGetPluginsForMaintainers() {
     final Plugins plugins = target("/plugins").queryParam("maintainers", "Kohsuke Kawaguchi").request().get(Plugins.class);
     Assert.assertNotNull("Search for categories 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
@@ -157,7 +166,7 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testSearchRequiredCore() {
+  public void testGetPluginsForRequiredCore() {
     final Plugins plugins = target("/plugins").queryParam("core", "1.505").request().get(Plugins.class);
     Assert.assertNotNull("Search for requiredCore is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
@@ -168,35 +177,31 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testGetLabels() throws Exception {
-    final Labels labels = target("/labels").request().get(Labels.class);
-    Assert.assertNotNull("Labels null", labels);
-    Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
-    Assert.assertEquals("Labels limit doesn't match", labels.getLimit(), labels.getLabels().size());
+  public void testGetPluginsForOnlyNew() {
+    final Plugins plugins = target("/plugins").queryParam("new", "true").request().get(Plugins.class);
+    Assert.assertNotNull("Search for requiredCore is null", plugins);
+    for (Plugin plugin : plugins.getPlugins()) {
+      Assert.assertTrue("Found plugin that isn't new", plugin.isNew());
+    }
   }
 
   @Test
-  public void testGetCategories() throws Exception {
-    final Categories categories = target("/categories").request().get(Categories.class);
-    Assert.assertNotNull("Categories null", categories);
-    Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
-    Assert.assertEquals("Categories limit doesn't match", categories.getLimit(), categories.getCategories().size());
-  }
-
-  @Test
-  public void testGetMaintainers() {
-    final Maintainers maintainers = target("/maintainers").request().get(Maintainers.class);
-    Assert.assertNotNull("Maintainers null", maintainers);
-    Assert.assertFalse("Maintainers empty", maintainers.getMaintainers().isEmpty());
-    Assert.assertEquals("Maintainers limit doesn't match", maintainers.getLimit(), maintainers.getMaintainers().size());
-  }
-
-  @Test
-  public void testGetMostInstalled() {
+  public void testGetPluginsMostInstalled() {
     final Plugins plugins = target("/plugins/installed").request().get(Plugins.class);
     Assert.assertNotNull("Most installed null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("Most installed order not correct", plugins.getPlugins().get(0).getStats().getCurrentInstalls() > plugins.getPlugins().get(1).getStats().getCurrentInstalls());
+    Assert.assertEquals("Most installed limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
+  }
+
+  @Test
+  public void testGetPluginsNew() {
+    final Plugins plugins = target("/plugins/new").request().get(Plugins.class);
+    Assert.assertNotNull("New null", plugins);
+    Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
+    plugins.getPlugins().forEach(plugin -> {
+      Assert.assertTrue("Plugin not new", plugin.isNew());
+    });
     Assert.assertEquals("Most installed limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
   }
 
@@ -210,12 +215,36 @@ public class RestAppIntegrationTest extends JerseyTest {
   }
 
   @Test
-  public void testGetTrend() {
+  public void testGetPluginsTrend() {
     final Plugins plugins = target("/plugins/trend").request().get(Plugins.class);
     Assert.assertNotNull("Trend null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("Trend order not correct", plugins.getPlugins().get(0).getStats().getTrend() > plugins.getPlugins().get(1).getStats().getTrend());
     Assert.assertEquals("Trend limit doesn't match", plugins.getLimit(), plugins.getPlugins().size());
+  }
+
+  @Test
+  public void testGetCategories() {
+    final Categories categories = target("/categories").request().get(Categories.class);
+    Assert.assertNotNull("Categories null", categories);
+    Assert.assertFalse("Categories empty", categories.getCategories().isEmpty());
+    Assert.assertEquals("Categories limit doesn't match", categories.getLimit(), categories.getCategories().size());
+  }
+
+  @Test
+  public void testGetLabels() {
+    final Labels labels = target("/labels").request().get(Labels.class);
+    Assert.assertNotNull("Labels null", labels);
+    Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
+    Assert.assertEquals("Labels limit doesn't match", labels.getLimit(), labels.getLabels().size());
+  }
+
+  @Test
+  public void testGetMaintainers() {
+    final Maintainers maintainers = target("/maintainers").request().get(Maintainers.class);
+    Assert.assertNotNull("Maintainers null", maintainers);
+    Assert.assertFalse("Maintainers empty", maintainers.getMaintainers().isEmpty());
+    Assert.assertEquals("Maintainers limit doesn't match", maintainers.getLimit(), maintainers.getMaintainers().size());
   }
 
   @Test

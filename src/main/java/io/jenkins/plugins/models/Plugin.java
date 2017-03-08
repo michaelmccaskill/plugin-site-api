@@ -92,13 +92,17 @@ public class Plugin {
   @JsonProperty("wiki")
   private Wiki wiki;
 
+  @JsonProperty
+  private Boolean isNew;
+
   public Plugin() {
   }
 
   public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, Scm scm, String sha1,
-                Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki) {
+                Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki,
+                Boolean isNew) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
@@ -119,6 +123,7 @@ public class Plugin {
     this.version = version;
     this.securityWarnings = securityWarnings;
     this.wiki = wiki;
+    this.isNew = isNew;
   }
 
   public LocalDate getBuildDate() {
@@ -279,5 +284,13 @@ public class Plugin {
 
   public void setWiki(Wiki wiki) {
     this.wiki = wiki;
+  }
+
+  public Boolean isNew() {
+    return isNew;
+  }
+
+  public void setNew(Boolean aNew) {
+    isNew = aNew;
   }
 }

@@ -25,9 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -220,6 +222,11 @@ public class GeneratePluginData {
         .stream()
         .collect(ArrayList::new, List::addAll, List::addAll);
       plugin.setSecurityWarnings(warnings);
+    }
+    // WEBSITE-309
+    if (plugin.getPreviousTimestamp() == null && plugin.getReleaseTimestamp() != null &&
+        ChronoUnit.DAYS.between(plugin.getReleaseTimestamp(), LocalDateTime.now()) <= 30) {
+      plugin.setNew(true);
     }
     return plugin;
   }

@@ -35,6 +35,14 @@ public interface DatastoreService {
   Categories getCategories() throws ServiceException;
 
   /**
+   * <p>Get unique labels for the application</p>
+   *
+   * @throws ServiceException in case something goes wrong
+   * @return labels
+   */
+  Labels getLabels() throws ServiceException;
+
+  /**
    * <p>Get unique maintainers for the application</p>
    *
    * @throws ServiceException in case something goes wrong
@@ -42,13 +50,6 @@ public interface DatastoreService {
    */
   Maintainers getMaintainers() throws ServiceException;
 
-  /**
-   * <p>Get unique labels for the application</p>
-   *
-   * @throws ServiceException in case something goes wrong
-   * @return labels
-   */
-  Labels getLabels() throws ServiceException;
 
   /**
    * <p>Get unique versions for the application</p>

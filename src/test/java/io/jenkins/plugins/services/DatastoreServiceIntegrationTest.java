@@ -97,14 +97,14 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearch() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").build());
     Assert.assertNotNull("Search for 'git' is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
   }
 
   @Test
-  public void testSearchSortByInstalls() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.INSTALLED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+  public void testSearchSortByInstalled() {
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.INSTALLED).build());
     Assert.assertNotNull("Search for 'git' sort by installs is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.INSTALLED not correct", plugins.getPlugins().get(0).getStats().getCurrentInstalls() > plugins.getPlugins().get(1).getStats().getCurrentInstalls());
@@ -112,7 +112,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchSortByName() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.NAME, Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.NAME).build());
     Assert.assertNotNull("Search for 'git' sort by name is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.NAME not correct", plugins.getPlugins().get(0).getName().compareTo(plugins.getPlugins().get(1).getName()) < 0);
@@ -120,14 +120,14 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchSortByRelevance() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.RELEVANCE, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.RELEVANCE).build());
     Assert.assertNotNull("Search for 'git' sort by relevance is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
   }
 
   @Test
   public void testSearchSortByTitle() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.TITLE ,Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.TITLE).build());
     Assert.assertNotNull("Search for 'git' sort by title is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.TITLE not correct", plugins.getPlugins().get(0).getTitle().compareTo(plugins.getPlugins().get(1).getTitle()) < 0);
@@ -135,7 +135,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchSortByTrend() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.TREND, Collections.emptyList(),  Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.TREND).build());
     Assert.assertNotNull("Search for 'git' sort by trend is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.TREND not correct", plugins.getPlugins().get(0).getStats().getTrend() > plugins.getPlugins().get(1).getStats().getTrend());
@@ -143,7 +143,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchSortByUpdated() {
-    final Plugins plugins = datastoreService.search(new SearchOptions("git", SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withQuery("git").withSortBy(SortBy.UPDATED).build());
     Assert.assertNotNull("Search for 'git' sort by updated is null", plugins);
     Assert.assertTrue("Should return multiple results", plugins.getTotal() > 1);
     Assert.assertTrue("SortBy.UPDATED not correct", plugins.getPlugins().get(0).getReleaseTimestamp().isAfter(plugins.getPlugins().get(1).getReleaseTimestamp()));
@@ -151,7 +151,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchCategories() {
-    final Plugins plugins = datastoreService.search(new SearchOptions(null, null, Arrays.asList("scm"), Collections.emptyList(), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withCategories("scm").build());
     Assert.assertNotNull("Search for categories 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       if (plugin.getCategories().contains("scm")) {
@@ -163,7 +163,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchLabels() {
-    final Plugins plugins = datastoreService.search(new SearchOptions(null, null, Collections.emptyList(), Arrays.asList("scm"), Collections.emptyList(), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withLabels("scm").build());
     Assert.assertNotNull("Search for labels 'scm' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       if (plugin.getLabels().contains("scm")) {
@@ -175,7 +175,7 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchMaintainers() {
-    final Plugins plugins = datastoreService.search(new SearchOptions(null, null, Collections.emptyList(), Collections.emptyList(), Arrays.asList("Kohsuke Kawaguchi"), null, 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withMaintainers("Kohsuke Kawaguchi").build());
     Assert.assertNotNull("Search for maintainers 'Kohsuke Kawaguchi' is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       for (Maintainer maintainer : plugin.getMaintainers()) {
@@ -189,12 +189,21 @@ public class DatastoreServiceIntegrationTest {
 
   @Test
   public void testSearchRequiredCore() {
-    final Plugins plugins = datastoreService.search(new SearchOptions(null , null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "1.505", 50, 1));
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withCore("1.505").build());
     Assert.assertNotNull("Search for requiredCore is null", plugins);
     for (Plugin plugin : plugins.getPlugins()) {
       if (!plugin.getRequiredCore().equals("1.505")) {
         Assert.fail("Found plugin with requiredCore not '1.505'");
       }
+    }
+  }
+
+  @Test
+  public void testSearchOnlyNew() {
+    final Plugins plugins = datastoreService.search(new SearchOptions.Builder().withOnlyNew(true).build());
+    Assert.assertNotNull("Search for requiredCore is null", plugins);
+    for (Plugin plugin : plugins.getPlugins()) {
+      Assert.assertTrue("Found plugin that isn't new", plugin.isNew());
     }
   }
 
@@ -207,19 +216,19 @@ public class DatastoreServiceIntegrationTest {
   }
 
   @Test
-  public void testGetMaintainers() {
-    final Maintainers maintainers = datastoreService.getMaintainers();
-    Assert.assertNotNull("Maintainers null", maintainers);
-    Assert.assertFalse("Maintainers empty", maintainers.getMaintainers().isEmpty());
-    Assert.assertEquals("Maintainers limit doesn't match", maintainers.getLimit(), maintainers.getMaintainers().size());
-  }
-
-  @Test
   public void testGetLabels() {
     final Labels labels = datastoreService.getLabels();
     Assert.assertNotNull("Labels null", labels);
     Assert.assertFalse("Labels empty", labels.getLabels().isEmpty());
     Assert.assertEquals("Labels limit doesn't match", labels.getLimit(), labels.getLabels().size());
+  }
+
+  @Test
+  public void testGetMaintainers() {
+    final Maintainers maintainers = datastoreService.getMaintainers();
+    Assert.assertNotNull("Maintainers null", maintainers);
+    Assert.assertFalse("Maintainers empty", maintainers.getMaintainers().isEmpty());
+    Assert.assertEquals("Maintainers limit doesn't match", maintainers.getLimit(), maintainers.getMaintainers().size());
   }
 
   @Test
@@ -229,6 +238,5 @@ public class DatastoreServiceIntegrationTest {
     Assert.assertFalse("Versions empty", versions.getVersions().isEmpty());
     Assert.assertEquals("Versions limit doesn't match", versions.getLimit(), versions.getVersions().size());
   }
-
 
 }
