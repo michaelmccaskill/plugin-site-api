@@ -92,7 +92,16 @@ public class DatastoreServiceIntegrationTest {
     final Plugin plugin = datastoreService.getPlugin("cucumber-reports");
     Assert.assertNotNull("cucumber-reports plugin not found", plugin);
     Assert.assertEquals("cucumber-reports", plugin.getName());
+    Assert.assertNotNull("securityWarnings null", plugin.getSecurityWarnings());
     Assert.assertFalse("securityWarnings are empty", plugin.getSecurityWarnings().isEmpty());
+    plugin.getSecurityWarnings().forEach(securityWarning -> {
+      Assert.assertNotNull("securityWarnings.version null", securityWarning);
+      Assert.assertNotNull("securityWarnings.version.id null", securityWarning.getId());
+      Assert.assertNotNull("securityWarnings.version.message null", securityWarning.getMessage());
+      Assert.assertNotNull("securityWarnings.version.url null", securityWarning.getUrl());
+      Assert.assertNotNull("securityWarnings.version.versions null", securityWarning.getVersions());
+      Assert.assertFalse("securityWarnings.version.versions empty", securityWarning.getVersions().isEmpty());
+    });
   }
 
   @Test

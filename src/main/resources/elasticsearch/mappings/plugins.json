@@ -127,15 +127,7 @@
           "active":{
             "type":"boolean"
           },
-          "firstVersion":{
-            "type":"string",
-            "index":"not_analyzed"
-          },
           "id":{
-            "type":"string",
-            "index":"not_analyzed"
-          },
-          "lastVersion":{
             "type":"string",
             "index":"not_analyzed"
           },
@@ -145,6 +137,19 @@
           "url":{
             "type":"string",
             "index":"not_analyzed"
+          },
+          "versions":{
+            "type":"nested",
+            "properties":{
+              "firstVersion":{
+                "type":"string",
+                "index":"not_analyzed"
+              },
+              "lastVersion":{
+                "type":"string",
+                "index":"not_analyzed"
+              }
+            }
           }
         }
       },

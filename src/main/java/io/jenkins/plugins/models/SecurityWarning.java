@@ -3,6 +3,8 @@ package io.jenkins.plugins.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SecurityWarning {
 
@@ -18,22 +20,18 @@ public class SecurityWarning {
   @JsonProperty("active")
   private boolean active;
 
-  @JsonProperty("firstVersion")
-  private String firstVersion;
-
-  @JsonProperty("lastVersion")
-  private String lastVersion;
+  @JsonProperty
+  private List<SecurityWarningVersion> versions;
 
   public SecurityWarning() {
   }
 
-  public SecurityWarning(String id, String message, String url, boolean active, String firstVersion, String lastVersion) {
+  public SecurityWarning(String id, String message, String url, boolean active, List<SecurityWarningVersion> versions) {
     this.id = id;
     this.message = message;
     this.url = url;
     this.active = active;
-    this.firstVersion = firstVersion;
-    this.lastVersion = lastVersion;
+    this.versions = versions;
   }
 
   public String getId() {
@@ -68,20 +66,12 @@ public class SecurityWarning {
     this.active = active;
   }
 
-  public String getFirstVersion() {
-    return firstVersion;
+  public List<SecurityWarningVersion> getVersions() {
+    return versions;
   }
 
-  public void setFirstVersion(String firstVersion) {
-    this.firstVersion = firstVersion;
-  }
-
-  public String getLastVersion() {
-    return lastVersion;
-  }
-
-  public void setLastVersion(String lastVersion) {
-    this.lastVersion = lastVersion;
+  public void setVersions(List<SecurityWarningVersion> versions) {
+    this.versions = versions;
   }
 
 }
