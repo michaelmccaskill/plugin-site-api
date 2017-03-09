@@ -92,13 +92,20 @@ public class Plugin {
   @JsonProperty("wiki")
   private Wiki wiki;
 
+  @JsonProperty
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  private LocalDateTime firstRelease;
+
   public Plugin() {
   }
 
   public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, Scm scm, String sha1,
-                Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki) {
+                Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki,
+                LocalDateTime firstRelease) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
@@ -119,6 +126,7 @@ public class Plugin {
     this.version = version;
     this.securityWarnings = securityWarnings;
     this.wiki = wiki;
+    this.firstRelease = firstRelease;
   }
 
   public LocalDate getBuildDate() {
@@ -279,5 +287,13 @@ public class Plugin {
 
   public void setWiki(Wiki wiki) {
     this.wiki = wiki;
+  }
+
+  public LocalDateTime getFirstRelease() {
+    return firstRelease;
+  }
+
+  public void setFirstRelease(LocalDateTime firstRelease) {
+    this.firstRelease = firstRelease;
   }
 }
