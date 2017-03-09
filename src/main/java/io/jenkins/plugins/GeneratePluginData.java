@@ -201,24 +201,27 @@ public class GeneratePluginData {
     plugin.setScm(scm);
     if (warningsMap.containsKey(plugin.getName())) {
       final List<SecurityWarning> warnings = warningsMap.get(plugin.getName()).stream()
-        .map(warningJson ->
-          StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false)
-            .map(obj -> (JSONObject) obj)
-            .map(versionJson -> {
-              final boolean active = Pattern.compile(versionJson.getString("pattern")).matcher(plugin.getVersion()).matches();
-              return new SecurityWarning(
+        .map(warningJson -> {
+          final List<SecurityWarningVersion> versions =
+            StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false)
+              .map(obj -> (JSONObject) obj)
+              .map(versionJson -> new SecurityWarningVersion(
+                versionJson.optString("firstVersion", null),
+                versionJson.optString("lastVersion", null)
+              ))
+              .collect(Collectors.toList());
+          final boolean active =
+            StreamSupport.stream(warningJson.getJSONArray("versions").spliterator(), false)
+              .map(obj -> (JSONObject) obj)
+              .map(versionJson -> plugin.getVersion().matches(versionJson.getString("pattern")))
+              .reduce(false, (a, b) -> a || b);
+          return new SecurityWarning(
                 warningJson.getString("id"),
                 warningJson.getString("message"),
                 warningJson.getString("url"),
                 active,
-                versionJson.optString("firstVersion", null),
-                versionJson.optString("lastVersion", null)
-              );
-            }).collect(Collectors.toList())
-        )
-        .collect(Collectors.toList())
-        .stream()
-        .collect(ArrayList::new, List::addAll, List::addAll);
+                versions);
+        }).collect(Collectors.toList());
       plugin.setSecurityWarnings(warnings);
     }
     return plugin;
