@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.generate;
 
 import io.jenkins.plugins.commons.JsonObjectMapper;
 import io.jenkins.plugins.models.*;
