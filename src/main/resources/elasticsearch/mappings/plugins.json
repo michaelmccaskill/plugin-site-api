@@ -45,6 +45,9 @@
         "type":"string",
         "index":"not_analyzed"
       },
+      "hasNoReverseDependencies":{
+        "typw":"boolean"
+      },
       "labels":{
         "type":"string",
         "index":"not_analyzed"

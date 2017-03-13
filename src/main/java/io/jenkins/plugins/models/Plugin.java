@@ -98,6 +98,9 @@ public class Plugin {
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
   private LocalDateTime firstRelease;
 
+  @JsonProperty
+  private boolean hasNoReverseDependencies;
+
   public Plugin() {
   }
 
@@ -105,7 +108,7 @@ public class Plugin {
                 String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, Scm scm, String sha1,
                 Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki,
-                LocalDateTime firstRelease) {
+                LocalDateTime firstRelease, boolean hasNoReverseDependencies) {
     this.buildDate = buildDate;
     this.categories = categories;
     this.dependencies = dependencies;
@@ -127,6 +130,7 @@ public class Plugin {
     this.securityWarnings = securityWarnings;
     this.wiki = wiki;
     this.firstRelease = firstRelease;
+    this.hasNoReverseDependencies = hasNoReverseDependencies;
   }
 
   public LocalDate getBuildDate() {
@@ -296,4 +300,13 @@ public class Plugin {
   public void setFirstRelease(LocalDateTime firstRelease) {
     this.firstRelease = firstRelease;
   }
+
+  public boolean hasNoReverseDependencies() {
+    return hasNoReverseDependencies;
+  }
+
+  public void setHasNoReverseDependencies(boolean hasNoReverseDependencies) {
+    this.hasNoReverseDependencies = hasNoReverseDependencies;
+  }
+
 }

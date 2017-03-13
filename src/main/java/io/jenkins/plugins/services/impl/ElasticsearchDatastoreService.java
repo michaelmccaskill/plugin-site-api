@@ -130,6 +130,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
             requestBuilder.addSort(SortBuilders.fieldSort("title.raw").order(SortOrder.ASC));
             break;
           case TREND:
+            queryBuilder.filter(QueryBuilders.termQuery("hasNoReverseDependencies", true));
             requestBuilder.addSort(SortBuilders.fieldSort("stats.trend").setNestedPath("stats").order(SortOrder.DESC));
             break;
           case UPDATED:
