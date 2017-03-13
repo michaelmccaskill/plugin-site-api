@@ -253,7 +253,7 @@
                   <goal>java</goal>
                 </goals>
                 <configuration>
-                  <mainClass>io.jenkins.plugins.GeneratePluginData</mainClass>
+                  <mainClass>io.jenkins.plugins.generate.GeneratePluginData</mainClass>
                 </configuration>
               </execution>
             </executions>

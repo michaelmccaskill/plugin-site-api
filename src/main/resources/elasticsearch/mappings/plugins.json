@@ -37,12 +37,13 @@
       "excerpt":{
         "type":"string"
       },
+      "firstRelease":{
+        "type":"date",
+        "format":"date_time"
+      },
       "gav":{
         "type":"string",
         "index":"not_analyzed"
-      },
-      "isNew":{
-        "type":"boolean"
       },
       "labels":{
         "type":"string",
