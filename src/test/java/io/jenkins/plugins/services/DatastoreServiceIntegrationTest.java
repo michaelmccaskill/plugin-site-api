@@ -57,11 +57,7 @@ public class DatastoreServiceIntegrationTest {
     Assert.assertFalse("Labels are empty", plugin.getLabels().isEmpty());
     Assert.assertNotNull("Stats are null", plugin.getStats());
     Assert.assertNotNull("Scm is null", plugin.getScm());
-    Assert.assertTrue("Scm issues is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
-    Assert.assertTrue("Scm link is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
-    Assert.assertTrue("Scm inLatestRelease is blank", StringUtils.isNotBlank(plugin.getScm().getInLatestRelease()));
-    Assert.assertTrue("Scm sinceLatestRelease is blank", StringUtils.isNotBlank(plugin.getScm().getSinceLatestRelease()));
-    Assert.assertTrue("Scm pullRequests is blank", StringUtils.isNotBlank(plugin.getScm().getPullRequests()));
+    Assert.assertTrue("Scm link is blank", StringUtils.isNotBlank(plugin.getScm().getLink()));
   }
 
   @Test
@@ -76,15 +72,6 @@ public class DatastoreServiceIntegrationTest {
       }
     }
     Assert.fail("Should have \"Oliver Gondža\" in maintainers");
-  }
-
-  @Test
-  public void testGetPluginNoScmButHaveIssues() {
-    final Plugin plugin = datastoreService.getPlugin("ace-editor");
-    Assert.assertNotNull("ACE editor plugin not found", plugin);
-    Assert.assertEquals("ace-editor", plugin.getName());
-    Assert.assertNotNull("Scm is null", plugin.getScm());
-    Assert.assertTrue("Scm issues is blank", StringUtils.isNotBlank(plugin.getScm().getIssues()));
   }
 
   @Test
