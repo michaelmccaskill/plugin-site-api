@@ -78,8 +78,7 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       } else {
         queryBuilder.must(QueryBuilders.matchAllQuery());
       }
-      if (!searchOptions.getMaintainers().isEmpty() || !searchOptions.getCategories().isEmpty()
-            || searchOptions.getCore() != null || !searchOptions.getLabels().isEmpty()) {
+      if (searchOptions.hasFilters()) {
         final BoolQueryBuilder filter = QueryBuilders.boolQuery();
         if (!searchOptions.getCategories().isEmpty() && !searchOptions.getLabels().isEmpty()) {
           filter.must(
@@ -119,6 +118,8 @@ public class ElasticsearchDatastoreService implements DatastoreService {
       requestBuilder.setQuery(queryBuilder);
       if (searchOptions.getSortBy() != null) {
         switch (searchOptions.getSortBy()) {
+          case FIRST_RELEASE:
+            requestBuilder.addSort(SortBuilders.fieldSort("firstRelease").order(SortOrder.DESC));
           case INSTALLED:
             requestBuilder.addSort(SortBuilders.fieldSort("stats.currentInstalls").setNestedPath("stats").order(SortOrder.DESC));
             break;

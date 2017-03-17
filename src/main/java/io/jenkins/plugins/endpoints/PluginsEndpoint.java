@@ -13,6 +13,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * <p>Endpoint for searching for plugins</p>
@@ -43,14 +44,25 @@ public class PluginsEndpoint {
   public Plugins search(
       @QueryParam("q") String query,
       @DefaultValue("relevance") @QueryParam("sort") SortBy sortBy,
-      @DefaultValue("") @QueryParam("categories") String categories,
-      @DefaultValue("") @QueryParam("labels") String labels,
-      @DefaultValue("") @QueryParam("maintainers") String maintainers,
-      @DefaultValue("") @QueryParam("core")String core,
+      @QueryParam("categories") Set<String> categories,
+      @QueryParam("labels") Set<String> labels,
+      @QueryParam("maintainers") Set<String> maintainers,
+      @QueryParam("core")String core,
       @DefaultValue("50") @QueryParam("limit") int limit,
       @DefaultValue("1") @QueryParam("page") int page) {
     try {
-      return datastoreService.search(new SearchOptions(query, sortBy, categories, labels, maintainers, core, limit, page));
+      return datastoreService.search(
+        new SearchOptions.Builder()
+          .withQuery(query)
+          .withSortBy(sortBy)
+          .withCategories(categories)
+          .withLabels(labels)
+          .withMaintainers(maintainers)
+          .withCore(core)
+          .withLimit(limit)
+          .withPage(page)
+          .build()
+      );
     } catch (ServiceException e) {
       logger.error("Problem getting plugins", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -67,9 +79,38 @@ public class PluginsEndpoint {
   @GET
   public Plugins getMostInstalled(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
-      return datastoreService.search(new SearchOptions(null, SortBy.INSTALLED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
+      return datastoreService.search(
+        new SearchOptions.Builder()
+          .withSortBy(SortBy.INSTALLED)
+          .withLimit(limit)
+          .build()
+      );
     } catch (ServiceException e) {
       logger.error("Problem getting most installed", e);
+      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * <p>Return the newest plugins</p>
+   *
+   * <p>This is plugins created in the last 30 days</p>
+   *
+   * @param limit The last "limit" plugins
+   * @return Matching plugins
+   */
+  @Path("/new")
+  @GET
+  public Plugins getNew(@DefaultValue("10") @QueryParam("limit") int limit) {
+    try {
+      return datastoreService.search(
+        new SearchOptions.Builder()
+          .withSortBy(SortBy.FIRST_RELEASE)
+          .withLimit(limit)
+          .build()
+      );
+    } catch (ServiceException e) {
+      logger.error("Problem getting trend", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -84,7 +125,12 @@ public class PluginsEndpoint {
   @GET
   public Plugins getRecentlyUpdated(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
-      return datastoreService.search(new SearchOptions(null, SortBy.UPDATED, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
+      return datastoreService.search(
+        new SearchOptions.Builder()
+          .withSortBy(SortBy.UPDATED)
+          .withLimit(limit)
+          .build()
+      );
     } catch (ServiceException e) {
       logger.error("Problem getting recently updated", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -101,7 +147,12 @@ public class PluginsEndpoint {
   @GET
   public Plugins getTrend(@DefaultValue("10") @QueryParam("limit") int limit) {
     try {
-      return datastoreService.search(new SearchOptions(null, SortBy.TREND, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null, limit, 1));
+      return datastoreService.search(
+        new SearchOptions.Builder()
+          .withSortBy(SortBy.TREND)
+          .withLimit(limit)
+          .build()
+      );
     } catch (ServiceException e) {
       logger.error("Problem getting trend", e);
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);

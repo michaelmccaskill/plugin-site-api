@@ -55,7 +55,7 @@ public class HttpClientWikiService implements WikiService {
 
   @Override
   public String getWikiContent(String url) throws ServiceException {
-    if (StringUtils.isNoneBlank(url)) {
+    if (StringUtils.isNotBlank(url)) {
       if (!url.startsWith(WIKI_URL)) {
         return getNonWikiContent(url);
       }

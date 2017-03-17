@@ -5,6 +5,7 @@ package io.jenkins.plugins.services;
  */
 public enum SortBy {
 
+  FIRST_RELEASE,
   INSTALLED,
   NAME,
   RELEVANCE,
