@@ -13,7 +13,7 @@ public class LabelsPluginDataParser implements PluginDataParser {
   public void parse(JSONObject pluginJson, Plugin plugin) {
     plugin.setLabels(StreamSupport.stream(pluginJson.optJSONArray("labels").spliterator(), false)
       .map(obj -> (String)obj)
-      .collect(Collectors.toList()));
+      .collect(Collectors.toSet()));
   }
 
 }

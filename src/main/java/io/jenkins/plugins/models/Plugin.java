@@ -13,6 +13,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Plugin {
@@ -26,7 +27,7 @@ public class Plugin {
   private LocalDate buildDate;
 
   @JsonProperty("categories")
-  private List<String> categories;
+  private Set<String> categories;
 
   @JsonProperty("dependencies")
   private List<Dependency> dependencies;
@@ -41,7 +42,7 @@ public class Plugin {
   private String gav;
 
   @JsonProperty("labels")
-  private List<String> labels;
+  private Set<String> labels;
 
   @JsonProperty("name")
   private String name;
@@ -101,8 +102,8 @@ public class Plugin {
   public Plugin() {
   }
 
-  public Plugin(LocalDate buildDate, List<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
-                String excerpt, String gav, List<String> labels, String name, LocalDateTime previousTimestamp,
+  public Plugin(LocalDate buildDate, Set<String> categories, List<Dependency> dependencies, List<Maintainer> maintainers,
+                String excerpt, String gav, Set<String> labels, String name, LocalDateTime previousTimestamp,
                 String previousVersion, LocalDateTime releaseTimestamp, String requiredCore, Scm scm, String sha1,
                 Stats stats, String title, String url, String version, List<SecurityWarning> securityWarnings, Wiki wiki,
                 LocalDateTime firstRelease) {
@@ -137,11 +138,11 @@ public class Plugin {
     this.buildDate = buildDate;
   }
 
-  public List<String> getCategories() {
+  public Set<String> getCategories() {
     return categories;
   }
 
-  public void setCategories(List<String> categories) {
+  public void setCategories(Set<String> categories) {
     this.categories = categories;
   }
 
@@ -177,11 +178,11 @@ public class Plugin {
     this.gav = gav;
   }
 
-  public List<String> getLabels() {
+  public Set<String> getLabels() {
     return labels;
   }
 
-  public void setLabels(List<String> labels) {
+  public void setLabels(Set<String> labels) {
     this.labels = labels;
   }
 
