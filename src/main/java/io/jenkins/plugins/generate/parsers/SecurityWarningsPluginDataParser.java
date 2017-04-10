@@ -20,7 +20,14 @@ public class SecurityWarningsPluginDataParser implements PluginDataParser {
     nameToWarningsMap = StreamSupport.stream(warningsJson.spliterator(), false)
       .map(obj -> (JSONObject)obj)
       .filter(warning -> warning.getString("type").equalsIgnoreCase("plugin"))
-      .collect(Collectors.toMap(warning -> warning.getString("name"), Arrays::asList, (o, n) -> { o.addAll(n); return o; }));
+      .collect(Collectors.toMap(
+        warning -> warning.getString("name"),
+        warning -> {
+          final List<JSONObject> list = new ArrayList<>();
+          list.add(warning);
+          return list;
+        },
+        (o, n) -> { o.addAll(n); return o; }));
   }
 
   @Override

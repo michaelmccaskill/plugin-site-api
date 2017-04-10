@@ -27,7 +27,7 @@ public class CategoriesPluginDataParser implements PluginDataParser {
     plugin.setCategories(plugin.getLabels().stream()
       .filter(labelToCategoryMap::containsKey)
       .map(labelToCategoryMap::get)
-      .collect(Collectors.toList()));
+      .collect(Collectors.toSet()));
   }
 
   private Map<String, String> buildLabelToCategoryMap() {
