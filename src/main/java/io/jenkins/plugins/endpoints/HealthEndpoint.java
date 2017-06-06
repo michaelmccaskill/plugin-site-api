@@ -38,8 +38,8 @@ public class HealthEndpoint {
     final Map<String, Object> result = new HashMap<>();
     final LocalDateTime createdAt = prepareDatastoreService.getCurrentCreatedAt();
     result.put("createdAt", createdAt != null ? formatter.format(createdAt) : null);
-    result.put("mappingVesion", VersionUtils.getMappingVersion());
-    result.put("elasticsearchVesion", VersionUtils.getElasticsearchVersion());
+    result.put("mappingVersion", VersionUtils.getMappingVersion());
+    result.put("elasticsearchVersion", VersionUtils.getElasticsearchVersion());
     return result;
   }
 
