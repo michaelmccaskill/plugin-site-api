@@ -54,7 +54,6 @@ public class ElasticsearchPrepareDatastoreService implements PrepareDatastoreSer
       }
     } catch (Exception e) {
       logger.error("Problem populating index", e);
-      throw new RuntimeException("Problem populating index", e);
     }
   }
 
