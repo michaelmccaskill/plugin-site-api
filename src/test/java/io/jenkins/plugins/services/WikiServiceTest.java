@@ -70,7 +70,6 @@ public class WikiServiceTest {
       final String value = element.attr("src");
       Assert.assertFalse("Wiki content not clean - src references to root : " + value, value.startsWith("/"));
     });
-    Assert.assertTrue("Wiki content not clean - references to table-wrap", html.getElementsByClass("table-wrap").isEmpty());
   }
 
   @Test
