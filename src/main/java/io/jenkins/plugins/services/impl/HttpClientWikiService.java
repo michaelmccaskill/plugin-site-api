@@ -104,8 +104,10 @@ public class HttpClientWikiService implements WikiService {
       return null;
     }
     final Element wikiContent = elements.first();
-    // Remove any Confluence stuff at the top
-    wikiContent.getElementsByClass("conf-macro output-inline").first().remove();
+    // Remove H4 tag with Plugin information, that is part of the jenkins-plugin-info macro
+    wikiContent.getElementsContainingOwnText("Plugin Information").tagName("h4").remove();
+    // Remove any Confluence tables
+    wikiContent.getElementsByClass("confluenceTable").remove();
     // Remove any table of contents
     wikiContent.getElementsByClass("toc").remove();
     // Replace href/src with the wiki url
