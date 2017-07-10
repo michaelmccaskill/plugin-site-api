@@ -72,7 +72,9 @@ node('docker') {
                                         '--no-cache --rm deploy')
                 if (pushToDocker) {
                     echo "Pushing container jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit}"
-                    container.push()
+                    infra.withDockerCredentials {
+                        container.push()
+                    }
                 }
             }
 
@@ -94,7 +96,9 @@ node('docker') {
             stage('Tag container as latest') {
                 if (pushToDocker) {
                     echo "Tagging jenkinsciinfra/plugin-site:${env.BUILD_ID}-${shortCommit} as latest"
-                    container.push('latest')
+                    infra.withDockerCredentials {
+                        container.push('latest')
+                    }
                 }
             }
         }
