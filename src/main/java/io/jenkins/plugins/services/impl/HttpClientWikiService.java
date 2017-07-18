@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,7 +38,12 @@ public class HttpClientWikiService implements WikiService {
 
   private LoadingCache<String, String> wikiContentCache;
 
-  public static final String WIKI_URL = "https://wiki.jenkins-ci.org";
+  public static final List<String> WIKI_URLS = new ArrayList<>();
+
+  static {
+      WIKI_URLS.add("https://wiki.jenkins-ci.org");
+      WIKI_URLS.add("https://wiki.jenkins.io");
+  }
 
   @PostConstruct
   public void postConstruct() {
@@ -48,15 +55,19 @@ public class HttpClientWikiService implements WikiService {
         public String load(String url) throws Exception {
           // Load the wiki content then clean it
           final String rawContent = doGetWikiContent(url);
-          return cleanWikiContent(rawContent);
+          return cleanWikiContent(rawContent, url);
         }
       });
+  }
+
+  private boolean isValidWikiUrl(String url) {
+    return WIKI_URLS.stream().anyMatch(url::startsWith);
   }
 
   @Override
   public String getWikiContent(String url) throws ServiceException {
     if (StringUtils.isNotBlank(url)) {
-      if (!url.startsWith(WIKI_URL)) {
+      if (!isValidWikiUrl(url)) {
         return getNonWikiContent(url);
       }
       try {
@@ -92,7 +103,7 @@ public class HttpClientWikiService implements WikiService {
   }
 
   @Override
-  public String cleanWikiContent(String content) throws ServiceException {
+  public String cleanWikiContent(String content, String url) throws ServiceException {
     if (content == null || content.trim().isEmpty()) {
       logger.warn("Can't clean null content");
       return null;
@@ -112,15 +123,16 @@ public class HttpClientWikiService implements WikiService {
     // Remove any table of contents
     wikiContent.getElementsByClass("toc").remove();
     // Replace href/src with the wiki url
-    wikiContent.getElementsByAttribute("href").forEach(element -> replaceAttribute(element, "href"));
-    wikiContent.getElementsByAttribute("src").forEach(element -> replaceAttribute(element, "src"));
+    final String baseUrl = WIKI_URLS.stream().filter(url::startsWith).findFirst().orElse(null);
+    wikiContent.getElementsByAttribute("href").forEach(element -> replaceAttribute(element, "href", baseUrl));
+    wikiContent.getElementsByAttribute("src").forEach(element -> replaceAttribute(element, "src", baseUrl));
     return wikiContent.html();
   }
 
-  public void replaceAttribute(Element element, String attributeName) {
+  public void replaceAttribute(Element element, String attributeName, String baseUrl) {
     final String attribute = element.attr(attributeName);
     if (attribute.startsWith("/")) {
-      element.attr(attributeName, WIKI_URL + attribute);
+      element.attr(attributeName, baseUrl + attribute);
     }
   }
 

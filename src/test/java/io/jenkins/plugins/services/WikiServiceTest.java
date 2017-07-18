@@ -57,9 +57,10 @@ public class WikiServiceTest {
 
   @Test
   public void testCleanWikiContent() throws IOException {
+    final String url = "https://wiki.jenkins.io/display/Git+Plugin";
     final File file = new File("src/test/resources/wiki_content.html");
     final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-    final String cleanContent = wikiService.cleanWikiContent(content);
+    final String cleanContent = wikiService.cleanWikiContent(content, url);
     Assert.assertNotNull("Wiki content is null", cleanContent);
     final Document html = Jsoup.parseBodyFragment(cleanContent);
     html.getElementsByAttribute("href").forEach(element -> {
@@ -74,10 +75,11 @@ public class WikiServiceTest {
 
   @Test
   public void testReplaceAttribute() throws IOException {
+    final String baseUrl = "https://wiki.jenkins.io";
     final String src = "/some-image.jpg";
     final Element element = Jsoup.parseBodyFragment(String.format("<img id=\"test-image\" src=\"%s\"/>", src)).getElementById("test-image");
-    wikiService.replaceAttribute(element, "src");
-    Assert.assertEquals("Attribute replacement failed", HttpClientWikiService.WIKI_URL + src, element.attr("src"));
+    wikiService.replaceAttribute(element, "src", baseUrl);
+    Assert.assertEquals("Attribute replacement failed", baseUrl + src, element.attr("src"));
   }
 
 }
