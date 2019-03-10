@@ -1,34 +1,39 @@
 #!/usr/bin/env groovy
 
-properties([
-    /* Only keep the most recent builds. */
-    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')),
-    /* build regularly */
-    pipelineTriggers([cron('H/30 * * * *')])
-])
+pipeline {
+    agent { label 'maven' }
 
-
-node('docker') {
-
-    stage('Checkout') {
-        /* Make sure we're always starting with a fresh workspace */
-        deleteDir()
-        git 'https://github.com/jenkins-infra/plugin-site-api.git'
+    options {
+        buildDiscarder(logRotator(numtoKeepStr: '7'))
+        timestamps()
+    }
+    triggers {
+        cron('H/30 * * * *')
     }
 
-    stage('Generate') {
-        timestamps {
-            withEnv([ 'PLUGIN_DOCUMENTATION_URL=https://updates.jenkins.io/current/plugin-documentation-urls.json' ]) {
-                docker.image('maven').inside {
-                    sh 'mvn -PgeneratePluginData'
-                }
+    stages {
+        stage('Checkout') {
+            steps {
+                deleteDir()
+                git 'https://github.com/jenkins-infra/plugin-site-api.git'
             }
         }
-    }
 
-    stage('Archive') {
-        dir('target') {
-            archiveArtifacts artifacts: 'plugins.json.gzip', fingerprint: true
+        stage('Generate') {
+            environment {
+                PLUGIN_DOCUMENTATION_URL = 'https://updates.jenkins.io/current/plugin-documentation-urls.json'
+            }
+            steps {
+                sh 'mvn -PgeneratePluginData'
+            }
+
+            post {
+                success {
+                    dir('target') {
+                        archiveArtifacts artifacts: 'plugins.json.gzip', fingerprint: true
+                    }
+                }
+            }
         }
     }
 }
