@@ -24,7 +24,7 @@ pipeline {
                 PLUGIN_DOCUMENTATION_URL = 'https://updates.jenkins.io/current/plugin-documentation-urls.json'
             }
             steps {
-                sh 'mvn -PgeneratePluginData'
+                sh 'mvn -B -PgeneratePluginData'
             }
 
             post {
