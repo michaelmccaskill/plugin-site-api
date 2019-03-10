@@ -8,7 +8,7 @@ pipeline {
         timestamps()
     }
     triggers {
-        cron('H/30 * * * *')
+        cron('H/10 * * * *')
     }
 
     stages {
