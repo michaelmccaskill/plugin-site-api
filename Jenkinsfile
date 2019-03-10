@@ -4,7 +4,7 @@ pipeline {
     agent { label 'maven' }
 
     options {
-        buildDiscarder(logRotator(numtoKeepStr: '7'))
+        buildDiscarder(logRotator(numToKeepStr: '7'))
         timestamps()
     }
     triggers {
