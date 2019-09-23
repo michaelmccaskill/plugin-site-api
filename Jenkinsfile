@@ -4,6 +4,7 @@ pipeline {
     agent { label 'maven' }
 
     options {
+        disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '7'))
         timestamps()
         timeout(time: 1, unit: 'HOURS')
